@@ -241,6 +241,16 @@ python repl.py sandbox app.exe --run --yes        # تشغيل فعلي بعد �
 (بحد أقصى 3600 ثانية) يُنهي شجرة العملية عبر `taskkill /T /F` ويسجّل
 `watchdog_triggered`. لا يُنفّذ أي أمر على المضيف.
 
+**تفعيل الميزة (يتطلب مديراً وإعادة تشغيل):**
+
+```powershell
+Enable-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM -All -NoRestart
+```
+
+**تحقق ميداني (2026-10-24):** الميزة `Enabled` دون إعادة تشغيل، و`vmcompute`/`vmms`
+يعملان، و`--run --yes` أنشأ VM فعلية ونفّذ عينة PE غير ضارة داخلها وأعاد
+`stdout.txt` إلى مجلد النتائج على المضيف.
+
 ---
 
 ## 9. فحص الدفعات والاختبار الذاتي
