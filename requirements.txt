@@ -1,0 +1,3 @@
+pefile>=2024.8.26
+asn1crypto>=1.5.1
+certifi>=2024.2.2

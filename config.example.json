@@ -1,0 +1,64 @@
+{
+  "provider": {
+    "type": "openai-compatible",
+    "base_url": "https://api.openai.com/v1",
+    "model": "gpt-4o-mini",
+    "api_key_env": "RE_API_KEY",
+    "api_key": "",
+    "timeout": 120,
+    "temperature": 0.2,
+    "retries": 2,
+    "max_response_mb": 8
+  },
+  "agent": {
+    "max_steps": 8,
+    "default_mode": "heuristic",
+    "restrict_paths": true,
+    "max_tool_calls": 8,
+    "max_seconds": 300,
+    "max_context_chars": 60000,
+    "max_tool_result_chars": 6000,
+    "context_chars": 3000,
+    "tool_timeout": 120
+  },
+  "analysis": {
+    "max_file_mb": 1024,
+    "strings_max": 300,
+    "strings_max_mb": 512,
+    "pe_max_mb": 512,
+    "apk_max_mb": 512,
+    "apk_uncompressed_max_mb": 2048,
+    "apk_max_entries": 50000,
+    "apk_max_ratio": 200,
+    "apk_manifest_max_kb": 8192,
+    "apk_decode_timeout": 300,
+    "yara": true,
+    "yara_max_mb": 512,
+    "yara_timeout": 180,
+    "disasm": true,
+    "disasm_max_mb": 200,
+    "disasm_deep": true,
+    "ghidra_max_mb": 150,
+    "ghidra_decompile": true,
+    "ghidra_decompile_limit": 6,
+    "bindiff_max_parse_mb": 256,
+    "bindiff_max_apk_entries": 50000
+  },
+  "web": {
+    "host": "127.0.0.1",
+    "port": 8765,
+    "token": "",
+    "token_env": "RE_WEB_TOKEN",
+    "allowed_hosts": [],
+    "allowed_roots": []
+  },
+  "integrations": {
+    "enabled": false,
+    "agent_enabled": false,
+    "timeout": 20,
+    "max_response_mb": 8
+  },
+  "ui": {
+    "language": "ar"
+  }
+}

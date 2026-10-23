@@ -1,0 +1,47 @@
+# مساحات العمل والمخرجات
+workspaces/
+diffs/
+scans/
+sandbox/
+agents/out/
+state.json
+bin/
+*.bak.*
+*.patch_tmp
+.re-sign-*/
+
+# الإعدادات الحساسة (لا تُرفع أبداً)
+config.json
+
+# أدوات خارجية كبيرة
+tools/*.jar
+tools/jadx-cli/
+tools/ghidra/
+tools/ghidra.zip
+tools/jdk21/
+tools/jdk21.zip
+tmp/
+
+# بايثون والتغليف
+__pycache__/
+*.pyc
+.venv/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# عينات
+bin/*.exe
+apk/*.apk
+apk/signed/
+apk/decoded/
+apk/java_src/
+apk/test-decoded/
+apk/test-java/
+apk/*.idsig
+*.idsig
+
+# ثنائيات أدوات YARA (تُنزَّل محلياً)
+tools/yara/
