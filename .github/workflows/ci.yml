@@ -34,5 +34,13 @@ jobs:
         run: |
           python -m coverage run -m unittest discover -s tests
           python -m coverage report
+      - name: Build package
+        if: matrix.python-version == '3.12'
+        run: python -m build
+      - name: Release tooling (dry run)
+        if: matrix.python-version == '3.12'
+        run: |
+          python -m replatform.tools.release --dist dist --out dist --portable
+          python -m replatform.tools.release --dist dist --verify
       - name: Self-test
         run: python repl.py selftest

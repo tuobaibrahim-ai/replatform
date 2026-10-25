@@ -1,7 +1,7 @@
 # تقرير حالة مشروع REPLATFORM
 
-**الإصدار:** 1.3.1 · **تاريخ التقرير:** 2026-10-25 · **الترخيص:** MIT
-**المستودع:** `https://github.com/tuobaibrahim-ai/replatform` (خاص) · **الفرع:** `master` · **الوسم:** `v1.3.1`
+**الإصدار:** 1.4.0 · **تاريخ التقرير:** 2026-10-25 · **الترخيص:** MIT
+**المستودع:** `https://github.com/tuobaibrahim-ai/replatform` (خاص) · **الفرع:** `master` · **الوسم:** `v1.4.0`
 
 ---
 
@@ -14,9 +14,9 @@ REPLATFORM منصة ويندوز محلية للهندسة العكسية وتح
 
 | المؤشر | القيمة |
 |---|---|
-| كود الإنتاج | 40 ملف Python · 8,547 سطراً |
-| الاختبارات | 122 اختبار `unittest` |
-| تغطية الوحدات | 48% (حد CI: 45%) |
+| كود الإنتاج | 42 ملف Python · 8,768 سطراً |
+| الاختبارات | 325 اختبار `unittest` |
+| تغطية الوحدات | 75% (حد CI: 70%) |
 | الاختبار الذاتي | 29/29 ناجح (`selftest --full`) |
 | تقييم الوكيل | 5/5 (100%) في 0.7ث |
 | أوامر CLI | 21 أمراً |
@@ -24,8 +24,8 @@ REPLATFORM منصة ويندوز محلية للهندسة العكسية وتح
 | موصلات التكامل | 12 (قراءة فقط) |
 | قواعد YARA | 19 قاعدة |
 | مهارات الوكلاء | 9 |
-| CI | ناجح على Windows (Python 3.12 و3.13) |
-| حالة Git | شجرة نظيفة · وسم `v1.3.1` |
+| CI | Windows (Python 3.12 و3.13) — lint/compile/tests/coverage/build |
+| حالة Git | شجرة عمل 1.4.0 · الوسم `v1.4.0` |
 
 ---
 
@@ -79,6 +79,17 @@ Ghidra، YARA، Rizin، محرر سداسي) وسكربتات يدوية، مع 
 - أدوات الوكيل للقراءة فقط ومقيّدة بالهدف (`restrict_paths`)، بميزانيات خطوات/وقت.
 - واجهة ويب محلية: رمز دخول، Bearer، كوكي، قائمة مضيفين مسموحة، قفل تحليل.
 
+### 3.6 طبقة المنتج والإصدار
+
+- `python -m replatform.tools.release`: SBOM (CycloneDX 1.5)، `SHA256SUMS`،
+  حزمة ZIP محمولة حتمية، وأمر `--verify` للتحقق.
+- `install.ps1`: بيئة افتراضية، اعتماديات، إعداد بلا مفاتيح، وتحقق تلقائي.
+- `replatform.cmd`: مشغّل يستخدم `.venv` أو Python في PATH.
+- حوكمة: سياسة أمان، مساهمة، سلوك، دعم، ترخيص تجاري، إشعارات أطراف ثالثة،
+  وCITATION.cff.
+- أتمتة: قوالب Issues/PR، Dependabot، وRelease workflow يتحقق من تطابق الوسم
+  مع الإصدار قبل النشر.
+
 ---
 
 ## 4. البنية التقنية
@@ -90,10 +101,12 @@ replatform/
 ├── analyzers/               pe · apk · strings · yara · disasm
 ├── agents/                  tools · provider · loop · tokenizer · heuristic
 ├── tools/                   selftest(914) · bindiff(548) · batch · patcher ·
-│                            apk_tools · sandbox · ghidra_tools · benchmark · yara_engine
+│                            apk_tools · sandbox · ghidra_tools · benchmark ·
+│                            yara_engine · release (SBOM/بصمات/ZIP)
 ├── integrations/            connectors(758) · catalog(254) · http(171)
 ├── web/server.py (541)      لوحة التحكم
-└── reports/__init__.py      تقارير HTML
+├── reports/__init__.py      تقارير HTML
+└── docs/                    ARCHITECTURE · DEPLOYMENT · QUALITY · ROADMAP
 ```
 
 أكبر الوحدات: `cli.py` 1074، `selftest.py` 914، `connectors.py` 758، `bindiff.py` 548،
@@ -155,11 +168,12 @@ Windows Sandbox: الميزة `Containers-DisposableClientVM = Enabled`،
 |---|---|
 | `ruff check replatform tests repl.py` | ناجح |
 | `compileall` | ناجح |
-| `unittest` (122) | 122/122 OK |
-| `coverage` (وحدات المنطق) | 48% — الحد الأدنى 45% |
+| `unittest` (325) | 325/325 OK |
+| `coverage` (وحدات المنطق) | 75% — الحد الأدنى 70% |
 | `selftest --full` | 29/29 (يشمل APK وRizin وGhidra وSandbox) |
 | `benchmark` | 5/5 (path_guard, compaction, timeout, usage/tokens, tool_budget) |
-| GitHub Actions | ناجح (3.12 و3.13) — lint + compile + unit + coverage + selftest |
+| أدوات الإصدار | SBOM + بصمات + ZIP محمول؛ `--verify` يعيد `ok: true` |
+| GitHub Actions | lint + compile + unit + coverage + build + release dry-run (3.12 و3.13) |
 
 ---
 
@@ -170,19 +184,22 @@ Windows Sandbox: الميزة `Containers-DisposableClientVM = Enabled`،
 **P1 — يحتاج قرار المالك:**
 
 1. **التكاملات غير مجرَّبة حياً:** لا مفاتيح API. الأثر: لا تحقق من صحة التطبيع
-   على استجابات حقيقية. المعالجة: تزويد `ABUSECH_AUTH_KEY` أولاً (يفعّل موصلين).
-2. **المراقبة السلوكية محدودة:** Sandbox يلتقط stdout فقط؛ لا ETW/Procmon/تتبّع
+   على استجابات حقيقية. المعالجة: تزويد `ABUSECH_AUTH_KEY` أولاً (يفعّل موصلين)،
+   ثم اختبار كل موصل وتوثيق fixtures.
+2. **المراقبة السلوكية محدودة:** Sandbox يلتقط `stdout` فقط؛ لا ETW/Procmon/تتبّع
    شبكة داخل الصندوق. الأثر: تحليل ديناميكي سطحي. المعالجة: VM بأدوات مراقبة.
 
 **P2 — تحسينات:**
 
 3. قواعد YARA 19 قاعدة محلية؛ لا حزم قواعد مجتمعية (Sigma/خ) بعد.
-4. لا fuzzing بعد (تغطية الوحدات تُقاس الآن: 48%).
+4. التغطية 75% (كانت 48%)؛ الهدف التالي 80% مع التركيز على `apk_tools` و`bindiff`
+   و`sandbox`.
 5. CI يشغّل `selftest` السريع فقط؛ `--full` يحتاج أدوات خارجية غير متاحة على runners.
-6. التوثيق عربي أساساً مع دليل إنجليزي مختصر (`README.en.md`).
-7. لا installer بعد (حزمة wheel/sdist تُبنى وتُنشر مع الوسم).
+6. التوثيق عربي أساساً مع دليل إنجليزي (`README.en.md`) ووثائق هندسية في `docs/`.
+7. لا توقيع كود؛ التوزيع ZIP + بصمات بدل installer موقّع (قرار متحفظ بلا شهادة).
 8. الاعتماد على ثنائيات خارجية (Ghidra/JDK/jadx) غير مثبّتة عبر pip.
-9. `cli.py` كبير (1074 سطراً) — مرشح للتفكيك إلى أوامر فرعية.
+9. `cli.py` كبير (1074 سطراً) — مرشح للتفكيك بعد تثبيت لقطة سطح الأوامر.
+10. **Windows فقط** في 1.4.0؛ لا دعم Linux للتحليل الثابت بعد.
 
 ---
 
@@ -192,14 +209,18 @@ Windows Sandbox: الميزة `Containers-DisposableClientVM = Enabled`،
 |---|---|---|
 | P1 | تزويد `ABUSECH_AUTH_KEY` ثم `integrations check urlhaus --live --yes` | المالك |
 | P1 | تحديد نطاق المراقبة السلوكية (VM + Procmon/ETW) | المالك |
-| P2 | رفع التغطية إلى 60% وإضافة fuzzing للـ parsers | الفريق |
+| P2 | رفع التغطية إلى 80% وإضافة fixtures لاستجابات الموصلات | الفريق |
 | P2 | تفكيك `cli.py` إلى أوامر فرعية | الفريق |
-| P2 | إضافة installer موقّع عند الحاجة | الفريق |
+| P2 | دراسة دعم Linux للتحليل الثابت بلا Sandbox | الفريق |
+| P2 | installer موقّع عند توفر شهادة توقيع كود | الفريق |
 
 ---
 
 ## 11. سجل الإصدارات المختصر
 
+- **1.4.0 (2026-10-25):** طبقة منتج — 325 اختباراً وتغطية 75% (حد 70%)،
+  حزمة محمولة + SBOM + بصمات، حوكمة ووثائق هندسية، Dependabot وRelease workflow،
+  و`python -m replatform`.
 - **1.3.1 (2026-10-25):** جودة — 122 اختباراً (منها 34 تعاقدية للموصلات)،
   تغطية 48% بحد CI 45%، 9 قواعد YARA إضافية، `README.en.md`، وترقية إجراءات CI.
 - **1.3.0 (2026-10-23):** تقوية شاملة — validate/decode/sign آمن، دلالات

@@ -1,10 +1,12 @@
 # REPLATFORM — Reverse-Engineering & Malware Analysis Platform
 
-> Offline-first Windows platform for static analysis of PE and APK files, YARA
-> scanning, disassembly, binary diffing, batch triage, constrained AI agents,
-> and a local authenticated web dashboard.
+> Local-first Windows platform for static analysis of PE and APK files, YARA
+> scanning, Ghidra/Rizin disassembly, binary diffing, batch triage, constrained
+> AI agents, and a token-protected local web dashboard.
 
-**Version 1.3.1 · MIT License · Windows 10/11 · Python 3.11+**
+**Version 1.4.0 · MIT License · Windows 10/11 · Python 3.11+ · Beta**
+
+[Arabic README](README.md) · [Full reference](PLATFORM.md) · [Deployment](docs/DEPLOYMENT.md) · [Architecture](docs/ARCHITECTURE.md) · [Quality](docs/QUALITY.md)
 
 ---
 
@@ -16,38 +18,60 @@ REPLATFORM unifies these tools behind one CLI, isolates every analysis in a
 workspace, and makes risky operations (patching, execution, network) explicit
 and confirmed rather than implicit.
 
+**Design invariants**
+
+- **No host execution of samples.** Dynamic analysis only via Windows Sandbox,
+  with an explicit `--run --yes` and a process-tree watchdog.
+- **No sample uploads.** Integrations send text indicators/queries only, and are
+  disabled by default.
+- **No secrets in files.** API keys come from environment variables.
+- **Every patch is recoverable.** Preview → backup → write → structural check →
+  automatic rollback on failure.
+
+---
+
+## Install
+
+### Portable bundle (recommended)
+
+```powershell
+Get-FileHash .\replatform-1.4.0-portable.zip -Algorithm SHA256
+# compare with SHA256SUMS from the release page
+cd replatform-1.4.0
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+.\replatform.cmd version
+```
+
+### From source
+
+```powershell
+git clone https://github.com/tuobaibrahim-ai/replatform.git
+cd replatform
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+python -m replatform version
+```
+
+The portable bundle and sdist include rules, skills, scripts, docs, and tests.
+A wheel installed from PyPI provides the package/CLI only; run from the source
+tree (or the portable bundle) for the full toolchain.
+
 ---
 
 ## Quick start
 
 ```powershell
-python repl.py tools                  # detect installed toolchain
-python repl.py use sample.exe         # pin the current target
-python repl.py analyze                # static analysis + HTML report
-python repl.py analyze app.apk --open
-python repl.py scan samples\ --pdf    # batch triage + PDF
-python repl.py diff old.exe new.exe   # binary diff (CDC-based similarity)
-python repl.py sandbox sample.exe     # Windows Sandbox plan (no execution)
-python repl.py selftest --full        # 29 end-to-end checks
-python -m unittest discover -s tests  # 112 regression tests
+python -m replatform tools                  # detect installed toolchain
+python -m replatform use sample.exe         # pin the current target
+python -m replatform analyze --open         # static analysis + HTML report
+python -m replatform analyze app.apk --open
+python -m replatform scan samples\ --pdf    # batch triage + PDF
+python -m replatform diff old.exe new.exe   # binary diff
+python -m replatform sandbox sample.exe     # Windows Sandbox plan (no execution)
+python -m replatform serve --open           # local web UI with a token
+python -m replatform selftest --full        # 29 end-to-end checks
 ```
-
----
-
-## Installation
-
-The platform expects a **checkout**, because external tools (`tools/`), rules
-(`rules/`), and agent skills (`skills/`) live beside the code:
-
-```powershell
-git clone https://github.com/tuobaibrahim-ai/replatform.git
-cd replatform
-python -m pip install -e ".[dev]"
-```
-
-Release artifacts (`*.whl`, `*.tar.gz`) contain the Python package plus rules,
-skills, scripts, and tests in the sdist. A pip-installed wheel provides the
-library/CLI only; run it from the source tree for the full toolchain.
 
 ---
 
@@ -56,13 +80,15 @@ library/CLI only; run it from the source tree for the full toolchain.
 | Area | What you get |
 |---|---|
 | PE | Architecture, sections & entropy, imports, ASLR/DEP/CFG, .NET, Authenticode |
-| APK | Package, SDK levels, permissions, exported components, signing v1–v4, certificate |
+| APK | Package, SDK levels, permissions, exported components, debuggable, cleartext, ABI, signing v1–v4 |
 | Strings | ASCII/UTF-16, URLs, IPs, registry paths, commands, crypto indicators |
 | YARA | 19 bundled rules; drop your own `*.yar` into `rules/` |
 | Disassembly | Rizin headless: function count, top functions, entry-point disassembly |
 | Ghidra | Headless function export, pseudocode, renaming |
-| Patching | Preview-first binary patching with automatic backup and rollback |
-| Diff | CDC-resistant similarity, PE/APK-aware comparison, HTML/PDF/JSON |
+| Patching | Preview-first binary patching with unique backup and automatic rollback |
+| APK lifecycle | `decode → build → sign → java → install`, with real v1–v4 verification |
+| Diff | Shift-resistant similarity, PE/APK-aware comparison, HTML/PDF/JSON |
+| Batch | `scan` a folder → HTML/JSON/CSV with CSV formula-injection neutralization |
 | Sandbox | Windows Sandbox plan, network off by default, explicit `--run --yes` |
 | Agents | Rule-based offline triage or OpenAI-compatible model over HTTPS only |
 | Integrations | 12 read-only threat-intel connectors, HTTPS-only, keys from env |
@@ -71,35 +97,81 @@ library/CLI only; run it from the source tree for the full toolchain.
 
 ## Safety model
 
-- **No host execution of samples.** Dynamic analysis only via Windows Sandbox,
-  with a watchdog that terminates the process tree.
-- **Read-only agent tools** restricted to the analysis target.
-- **Integrations never upload samples** — text indicators and queries only.
-- **Secrets never in code or logs** — API keys come from environment variables;
-  `config.json` is git-ignored.
-- **Strict limits** on file size, archive expansion (zip bombs), entry counts,
-  parser timeouts, and response sizes.
-- **TLS verification always on** (certificate + hostname), with a modern CA bundle.
+| Control | Implementation |
+|---|---|
+| Execution | No host execution; Sandbox requires `--run --yes` |
+| Network | HTTPS only, host allowlist, no redirects, response size cap |
+| Secrets | Environment variables only; never written to `config.json` or logs |
+| Data | `config.json`, `state.json`, `workspaces/` are git-ignored |
+| Patching | Backup + PE/ZIP validation + automatic rollback |
+| Web UI | `127.0.0.1` by default, Host allowlist, system paths rejected |
+| Supply chain | 3 runtime dependencies + CycloneDX SBOM + `SHA256SUMS` per release |
+
+See [`SECURITY.md`](SECURITY.md) for the threat model and reporting channel.
+
+---
+
+## Quality (verified)
+
+| Metric | Value |
+|---|---|
+| `unittest` tests | **325** — no network, no real samples |
+| Unit coverage | **75%** (CI gate: 70%) |
+| Fuzzing | 8 properties × 300 + 120 = 2,520 cases, fixed seed |
+| `selftest --full` | 29/29 |
+| `benchmark` | 5/5 |
+| CI | Windows · Python 3.12 & 3.13 · lint + compile + tests + coverage + build + release dry-run |
+| Release | CycloneDX 1.5 SBOM + `SHA256SUMS` + deterministic portable ZIP |
+
+```powershell
+python -m ruff check replatform tests repl.py
+python -m unittest discover -s tests
+python -m coverage run -m unittest discover -s tests; python -m coverage report
+python -m replatform selftest --full
+```
 
 ---
 
 ## Documentation
 
-- `PLATFORM.md` — full Arabic reference (commands, architecture, security).
-- `INTEGRATIONS.md` — connector catalog and key setup.
-- `CHANGELOG.md` — release history.
-- `PROJECT_REPORT.md` — current project status report.
+- [`PLATFORM.md`](PLATFORM.md) — full Arabic reference (commands, config, YARA, web, plugins).
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — layers, data flow, design decisions.
+- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — install, air-gapped setup, upgrades, troubleshooting.
+- [`docs/QUALITY.md`](docs/QUALITY.md) — gates, test inventory, release checklist.
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) — priorities and non-goals.
+- [`INTEGRATIONS.md`](INTEGRATIONS.md) — connectors, keys, read-only policy.
+- [`CHANGELOG.md`](CHANGELOG.md) — release history.
 
 ---
 
-## Development
+## License & commercial
 
-```powershell
-python -m pip install -e ".[dev]"
-python -m ruff check replatform tests repl.py
-python -m unittest discover -s tests -v
-python -m coverage run -m unittest discover -s tests; python -m coverage report
-```
+- **Core is MIT** — commercial use, modification, and redistribution allowed.
+  No DRM, no license keys, no telemetry. See [`LICENSE`](LICENSE).
+- **Revenue comes from services**: priority support, enterprise deployment,
+  custom analyzers/rules, security review, and training. See
+  [`COMMERCIAL.md`](COMMERCIAL.md).
+- Third-party licenses: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
-CI runs on Windows with Python 3.12 and 3.13: lint, compile, unit tests,
-coverage gate (45% for logic modules), and self-test.
+---
+
+## Known limitations
+
+- **Windows only** in 1.4.0.
+- **External tools are not bundled** (Ghidra/JDK/apktool/jadx/YARA/Rizin);
+  related analyzers report `skipped` when missing.
+- **Integrations are not live-tested** (no API keys available); TLS handshake
+  and missing-key refusal are verified.
+- **Behavioral monitoring is limited**: Sandbox captures `stdout` only.
+- **No code signing yet**; distribution is ZIP + checksums.
+
+---
+
+## Contributing
+
+Read [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+For vulnerabilities use [`SECURITY.md`](SECURITY.md) — never a public issue.
+
+---
+
+© 2026 REPLATFORM contributors · MIT

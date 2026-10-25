@@ -1,5 +1,40 @@
 # سجل التغييرات
 
+## 1.4.0 — 2026-10-25
+
+### طبقة المنتج (جديد)
+- **حزمة محمولة** `replatform-<version>-portable.zip` ببناء حتمي (بلا `__pycache__`
+  ولا عيّنات ولا أسرار) مع `install.ps1` و`replatform.cmd`.
+- **SBOM** بصيغة CycloneDX 1.5، و`SHA256SUMS` لكل مخرجات التوزيع، وأداة تحقق
+  `python -m replatform.tools.release --verify`.
+- `python -m replatform` كواجهة موازية لـ `repl.py`، و`py.typed`، وبيانات حزمة
+  صريحة، وروابط مشروع، ومصنفات Windows 10/11 وعربية/إنجليزية.
+- حوكمة كاملة: `SECURITY.md`، `CONTRIBUTING.md`، `CODE_OF_CONDUCT.md`،
+  `SUPPORT.md`، `COMMERCIAL.md`، `THIRD_PARTY_NOTICES.md`، `CITATION.cff`.
+- توثيق هندسي: `docs/ARCHITECTURE.md`، `docs/DEPLOYMENT.md`، `docs/QUALITY.md`،
+  `docs/ROADMAP.md`.
+- أتمتة GitHub: قوالب Issues/PR، Dependabot، وRelease workflow يتحقق من تطابق
+  الوسم، يبني الحزم، ينشئ SBOM والبصمات، وينشر Release.
+
+### الجودة والاختبارات
+- **325 اختبار `unittest`** (كانت 122)، وتغطية **75%** (كانت 48%) بحد CI **70%**.
+- `tests/test_agents.py` (63): المزوّدون، إعادة التوجيه، الأدوات، الحلقة، ضغط
+  السياق، التوكنات، والمزوّد الوهمي.
+- `tests/test_http.py` (24): allowlist، HTTPS، حدود الاستجابة، الأخطاء.
+- `tests/test_fuzz.py` (9): fuzzing حتمي ببذرة `20261025` لسبعة محللات مدخلات.
+- `tests/test_cli.py` (25): لقطة سطح 21 أمراً + التوزيع + المساعدات.
+- `tests/test_batch_export.py` (22): الدفعات، CSV injection، HTML، PDF.
+- `tests/test_ghidra.py` (14) و`tests/test_analyzers_extra.py` (23).
+- `tests/test_release.py` (23): SBOM، البصمات، الحزمة المحمولة، والتحقق.
+- `pyproject.toml`: `fail_under = 70`، و`build` ضمن اعتمادات التطوير.
+- CI يضيف بناء الحزم وتشغيل أدوات الإصدار (dry run) على Python 3.12.
+
+### التغييرات
+- الوصف الإنجليزي للحزمة ومصنفات أوسع؛ الإصدار في `pyproject.toml` و
+  `replatform/__init__.py` و`CITATION.cff` متطابق.
+- `--verify` في أداة الإصدار لا يعيد كتابة SBOM/البصمات (تحقق للقراءة فقط).
+- `README.md` و`README.en.md` أُعيد بناؤهما كصفحة منتج بأرقام 1.4.0.
+
 ## 1.3.1 — 2026-10-25
 
 ### الجودة والاختبارات

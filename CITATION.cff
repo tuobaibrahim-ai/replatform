@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use REPLATFORM in research or a commercial product, please cite it as below."
+title: "REPLATFORM"
+abstract: >-
+  A local Windows platform for reverse engineering and malware triage:
+  static PE/APK analysis, YARA matching, Ghidra/Rizin integration, batch
+  scanning, diffing, constrained AI agents, and a token-protected local web UI.
+  Untrusted samples are never executed on the host by default; dynamic analysis
+  is restricted to Windows Sandbox with explicit confirmation.
+type: software
+version: 1.4.0
+date-released: 2026-10-25
+license: MIT
+repository-code: "https://github.com/tuobaibrahim-ai/replatform"
+url: "https://github.com/tuobaibrahim-ai/replatform"
+keywords:
+  - reverse engineering
+  - malware analysis
+  - PE
+  - APK
+  - YARA
+  - Ghidra
+  - threat intelligence
+  - security
+authors:
+  - name: "REPLATFORM contributors"

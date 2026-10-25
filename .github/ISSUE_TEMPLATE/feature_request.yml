@@ -1,0 +1,62 @@
+name: طلب ميزة
+description: اقترح قدرة جديدة أو تحسيناً في REPLATFORM
+title: "[feat] "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        قبل الاقتراح، راجع `docs/ROADMAP.md` و`docs/ARCHITECTURE.md`.
+        الميزات التي تتطلب تنفيذ عيّنات على المضيف أو رفع عيّنات للسحابة
+        خارج نطاق المشروع.
+  - type: textarea
+    id: problem
+    attributes:
+      label: المشكلة
+      description: ما الذي يعيق عملك الآن؟ صف الحالة لا الحل فقط.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: الحل المقترح
+      description: كيف تتخيل السلوك؟ اذكر الأمر أو الواجهة إن أمكن.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: بدائل جربتها
+    validations:
+      required: false
+  - type: dropdown
+    id: scope
+    attributes:
+      label: نوع التغيير
+      options:
+        - ميزة جديدة
+        - تحسين أداء
+        - تحسين تجربة استخدام
+        - توثيق
+        - تغليف / نشر
+        - أمن / تقوية
+    validations:
+      required: true
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: توافق مع مبادئ المشروع
+      options:
+        - label: لا يتطلب تنفيذ عيّنات على المضيف
+          required: true
+        - label: لا يتطلب رفع عيّنات إلى خدمة خارجية
+          required: true
+        - label: لا يضيف اعتماداً ثقيلاً بلا مبرر
+          required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: سياق إضافي
+      description: حجم الفريق، البيئة، أمثلة استخدام
+    validations:
+      required: false

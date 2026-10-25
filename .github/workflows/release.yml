@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Verify tag matches version
+        shell: pwsh
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $version = python -c "from replatform import __version__; print(__version__)"
+          if ($tag -ne "v$version") {
+            throw "Tag '$tag' does not match package version 'v$version'."
+          }
+          Write-Host "Releasing $tag"
+
+      - name: Lint
+        run: python -m ruff check replatform tests repl.py
+
+      - name: Compile
+        run: python -m compileall -q replatform tests
+
+      - name: Tests
+        run: python -m unittest discover -s tests
+
+      - name: Coverage
+        run: |
+          python -m coverage run -m unittest discover -s tests
+          python -m coverage report
+
+      - name: Self-test
+        run: python -m replatform selftest
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Build portable bundle, SBOM and checksums
+        run: python -m replatform.tools.release --dist dist --out dist --portable
+
+      - name: Verify checksums
+        run: python -m replatform.tools.release --dist dist --verify
+
+      - name: Inspect artifacts
+        shell: pwsh
+        run: |
+          Get-ChildItem dist -File | Select-Object Name, Length | Format-Table -AutoSize
+          Get-Content dist\SHA256SUMS
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $files = Get-ChildItem dist -File | Select-Object -ExpandProperty FullName
+          gh release create $env:GITHUB_REF_NAME @files `
+            --title "REPLATFORM $env:GITHUB_REF_NAME" `
+            --generate-notes `
+            --verify-tag

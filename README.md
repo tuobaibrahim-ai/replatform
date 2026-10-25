@@ -1,205 +1,152 @@
-# REPLATFORM — منصة الهندسة العكسية و تحليل البرامج
+# REPLATFORM
 
-> 🚀 **منصة احترافية موحدة**: تحليل EXE و APK، مساحات عمل معزولة، تقارير HTML،
-> وكلاء ذكاء اصطناعي (قواعدي بلا إنترنت أو نموذج لغوي بأدوات)، ونظام إضافات.
+**منصة ويندوز محلية للهندسة العكسية وتحليل البرمجيات — PE · APK · YARA · Ghidra · وكلاء ذكاء اصطناعي مقيدون.**
 
-## البدء السريع
+الإصدار **1.4.0** · رخصة **MIT** · Windows 10/11 · Python 3.11+ · حالة **Beta**
 
-```powershell
-python repl.py tools                 # الأدوات وإصداراتها
-python repl.py use file.exe          # تحديد الملف المستهدف (يُحفظ)
-python repl.py analyze               # تحليل + تقرير HTML (PE/APK)
-python repl.py analyze app.apk --open
-python repl.py patch --find "str:A" --replace "str:B"          # معاينة
-python repl.py patch --find "str:A" --replace "str:B" --apply  # تنفيذ (نسخة احتياطية + استرجاع تلقائي)
-python repl.py apk decode / build / sign / java                # دورة APK كاملة (--force لإعادة الفك بأمان)
-python repl.py diff old.exe new.exe --pdf  # مقارنة نسختين + PDF
-python repl.py ghidra file.exe --rename "FUN_00401000=parse_config"  # pseudocode
-python repl.py scan samples\ --pdf   # فحص دفعات + PDF
-python repl.py sandbox file.exe      # خطة Windows Sandbox (لا تشغيل افتراضي)
-python repl.py ws report <id> --pdf --json  # تصدير PDF/JSON
-python repl.py benchmark             # تقييم قبول الوكيل (5 حالات، بلا شبكة)
-python repl.py selftest              # اختبار ذاتي سريع
-python repl.py selftest --full       # يشمل APK وRizin (29 فحصاً)
-python -m unittest discover -s tests -v  # اختبارات انحدار مستقلة (112 اختباراً)
-python -m coverage run -m unittest discover -s tests; python -m coverage report  # تغطية الوحدات (حد 45%)
-python repl.py serve --open          # واجهة ويب محلية (أو --host + --token)
-python repl.py inventory             # جرد البرامج المثبتة
-python repl.py ws list               # مساحات العمل السابقة
-```
-
-التوثيق الكامل: **[PLATFORM.md](PLATFORM.md)** — يشمل تحديد الملف المستهدف،
-أوامر التعديل والتطوير، YARA، التفكيك، واجهة الويب، إعداد النموذج اللغوي،
-واجهة الإضافات، البنية الداخلية، والأمان.
-English overview: **[README.en.md](README.en.md)**.
+[English overview](README.en.md) · [التوثيق الكامل](PLATFORM.md) · [دليل النشر](docs/DEPLOYMENT.md) · [البنية](docs/ARCHITECTURE.md) · [الجودة](docs/QUALITY.md)
 
 ---
 
-# بيئة تحليل وتعديل ملفات EXE و APK
+## لماذا REPLATFORM؟
 
-> ✅ **البيئة مُختبَرة بالكامل** — دورة عمل APK (فك ← بناء ← توقيع) وتحليل EXE تم اختبارها بنجاح على ملفات حقيقية.
+تحليل عيّنة واحدة قد يحتاج apktool وjadx وGhidra وYARA ومحرراً سداسياً وسكربتات
+متناثرة — مع خطر تشغيلها على جهاز العمل. REPLATFORM يوحّد ذلك في واجهة واحدة،
+ويعزل كل تحليل في مساحة عمل، ويجعل العمليات الخطرة **صريحة ومؤكَّدة**:
 
-## الأدوات المثبتة
+- **لا تنفيذ للعيّنات على المضيف.** التحليل ثابت افتراضياً. التشغيل الديناميكي
+  حصراً عبر Windows Sandbox وبإذن صريح.
+- **لا رفع عيّنات.** التكاملات ترسل مؤشرات/استعلامات نصية فقط، وهي معطّلة افتراضياً.
+- **لا أسرار في الملفات.** مفاتيح API من متغيرات البيئة فقط.
+- **كل تعديل قابل للاسترجاع.** معاينة → نسخة احتياطية → كتابة → تحقق بنيوي →
+  استرجاع تلقائي عند الفشل.
 
-### تحليل وتعديل APK
-| الأداة | الوصف | الأمر |
-|--------|-------|-------|
-| **apktool 3.0.3** | فك وإعادة بناء APK (Smali) | `apktool d file.apk` / `apktool b folder` |
-| **jadx 1.5.6** | تحويل APK إلى كود Java مفهوم | `jadx file.apk -d output` |
-| **uber-apk-signer 1.3.0** | توقيع APK بعد التعديل | `java -jar uber-apk-signer.jar --apks file.apk` |
-| **adb / fastboot** | التثبيت على الجهاز والاتصال | `adb install file.apk` |
+## البدء السريع
 
-### تحليل EXE
-| الأداة | الوصف |
-|--------|-------|
-| **Detect It Easy (DIE) 3.21** | تحديد نوع الملف، الم compil، البورتايت، التشفير |
-| **Cutter (Rizin)** | محلل شعاعي (Disassembler) ومحرر ثنائي |
-| **Ghidra 12.1.4 + JDK 21** | تفكيك متقدم بدون واجهة وتصدير الدوال — `python repl.py ghidra file.exe` |
-| **Python + pefile + capstone** | تحليل هياكل PE وتفكيك التعليمات البرمجية |
-
-## سير العمل النموذجي
-
-### APK: فك، تعديل، إعادة بناء، توقيع
-```powershell
-# 1) فك التغليف
-java -jar tools\apktool.jar d app.apk -o app_decoded
-
-# 2) تعديل الملفات (Smali في app_decoded\smali، الموارد في res\)
-
-# 3) إعادة البناء
-java -jar tools\apktool.jar b app_decoded -o app_modified.apk
-
-# 4) التوقيع
-java -jar tools\uber-apk-signer.jar --apks app_modified.apk
-
-# 5) التثبيت على جهاز متصل
-adb install app_modified-signed.apk
-```
-
-### APK: مشاهدة الكود المصدري فقط (بدون تعديل)
-```powershell
-jadx app.apk -d app_java        # كود Java مقروء
-```
-
-### EXE: تحليل أولي
-```powershell
-# تحديد النوع والحماية
-powershell -File scripts\analyze-exe.ps1 -Path path\to\file.exe
-
-# تحليل PE تفصيلي
-& "C:\Program Files\Python315\python.exe" scripts\analyze_pe.py path\to\file.exe
-```
-
-## هيكل المجلدات
-```
-exe\
-├── tools\              # أدوات التحليل
-│   ├── apktool.jar     # فك/بناء APK
-│   ├── uber-apk-signer.jar  # توقيع APK
-│   └── jadx-cli\       # تحويل APK → Java
-├── scripts\            # سكربتات تحليل جاهزة
-│   ├── analyze-exe.ps1     # فحص سريع PE + SHA256
-│   ├── analyze_pe.py       # تحليل PE تفصيلي
-│   ├── strings_extract.py  # استخراج النصوص
-│   └── apk-workflow.ps1    # دورة APK الكاملة
-├── apk\                # ملفات APK ومشروعات الفك
-├── bin\                # ملفات EXE قيد التحليل
-└── README.md
-```
-
-## الوكلاء الآليون (`agents\`)
-
-### 1) وكيل الجرد — `inventory_agent.ps1`
-يجمع البرامج المثبتة من ثلاثة مصادر ويخرجها CSV:
-- **Registry**: HKLM/HKCU (64-bit و 32-bit) مع تحديد الـ EXE الرئيسي لكل برنامج
-- **Appx**: تطبيقات Microsoft Store
-- **اختصارات**: سطح المكتب والقائمة ابدأ (يشمل البرامج المحمولة portable)
+### حزمة محمولة (موصى به)
 
 ```powershell
-.\agents\inventory_agent.ps1                    # → agents\out\installed.csv
+# 1) نزّل replatform-1.4.0-portable.zip من صفحة الإصدارات وتحقق من البصمة
+Get-FileHash .\replatform-1.4.0-portable.zip -Algorithm SHA256
+
+# 2) فك الضغط ثم
+cd replatform-1.4.0
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+
+# 3) تحقق
+.\replatform.cmd version
+.\replatform.cmd tools
 ```
 
-### 2) وكيل التحليل — `analyze_agent.py`
-تحليل جماعي **متوازٍ** (12 خيط على سبيل المثال) مع:
-- تحديد النوع (PE/APK/ELF)، المعمارية، طابع البناء، حمايات النظام (ASLR/DEP/CFG)
-- فحص التوقيع الرقمي **بدفعة واحدة** عبر PowerShell (موثوق وسريع — لا يعلّق)
-- اكتشاف مؤشرات تحليلية: حقن عمليات، تنزيل، ثبات، مكافحة تحليل
-- مطابقة الملفات مع مفاتيح التشغيل التلقائي (Run/RunOnce)
-- درجة خطورة 0+ مع توصية، وتقرير **HTML ملوّن** + CSV
+### من المصدر
 
 ```powershell
-python agents\analyze_agent.py "C:\Program Files" -o agents\out\analysis.csv --html agents\out\report.html --workers 12
-python agents\analyze_agent.py file.exe           # ملف واحد
-python agents\analyze_agent.py <مجلد> --die       # مع Detect It Easy (أبطأ)
-python agents\analyze_agent.py <مجلد> --no-sign   # تخطي فحص التوقيع (أسرع)
+git clone https://github.com/tuobaibrahim-ai/replatform.git
+cd replatform
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+python -m replatform version
 ```
 
-### 3) وكيل التعديل — `patch_agent.py` (توافق خلفي)
-الملف الآن **غلاف رفيع** يفوّض إلى `repl.py patch` والمحرك الموحّد
-`replatform/tools/patcher.py`، فلا توجد نسخة ثانية من منطق التعديل فيها عيوب قديمة.
-الطريقة المفضلة: `python repl.py patch`.
-
-الحمايات:
-1. **وضع العرض افتراضياً** — لا يكتب شيئاً بدون `--apply`
-2. **نسخة احتياطية فريدة** لكل عملية (دقة ميكروثانية + حجز ذري)
-3. **تحقق من PE/ZIP بعد الكتابة + استرجاع تلقائي** إن تلفت البنية
-4. **منع تغيير طول PE/APK/ZIP** افتراضياً (`--allow-resize` للتجاوز الواعي)
-5. **رفض مجلد النظام** (Windows) إلا بـ `--allow-system`
-6. **بدل `??` يطابق أي بايت** — بما فيه `0x0A/0x0D` — ونصوص ascii/utf-16le
+### جولة في 60 ثانية
 
 ```powershell
-# معاينة:
-python agents\patch_agent.py app.exe --find "str:TRIAL" --replace "str:FULL"
-# تطبيق أول تطابق:
-python agents\patch_agent.py app.exe --find "hex:48 89 5C 24 08 C3" --replace "hex:31 C0 C3" --apply
-# كل التطابقات:
-python agents\patch_agent.py app.exe --find "str:Hello" --replace "str:World" --all --apply
-# الطريقة الموصى بها:
-python repl.py patch app.exe --find "str:Hello" --replace "str:World" --all --apply
+python -m replatform use sample.exe        # حدّد الهدف (يُحفظ)
+python -m replatform analyze --open        # تحليل + تقرير HTML
+python -m replatform analyze app.apk --open
+python -m replatform scan samples\ --pdf   # دفعات + PDF
+python -m replatform diff old.exe new.exe  # مقارنة نسختين
+python -m replatform sandbox sample.exe    # خطة Windows Sandbox (بلا تشغيل)
+python -m replatform serve --open          # واجهة ويب محلية برمز دخول
+python -m replatform selftest --full       # 29 فحصاً للبيئة والأدوات
 ```
 
-### 4) المشغّل الموحد — `run_all.ps1`
-يشغّل الجرد ثم التحليل ثم يعرض التقرير:
+## القدرات
+
+| المجال | ما يقدّمه |
+|---|---|
+| **PE** | المعمارية، الأقسام والإنتروبيا، الاستيرادات، ASLR/DEP/CFG، .NET، توقيع Authenticode |
+| **APK** | الحزمة، min/target SDK، الأذونات، المكونات المصدّرة، debuggable، cleartext، ABI، توقيع v1–v4 |
+| **YARA** | 19 قاعدة محلية: حزم، اعتماد على PowerShell، LSASS dumping، UPX، anti-debug، توقيعات Defender |
+| **التفكيك** | Rizin (دوال + نقطة دخول) وGhidra headless (pseudocode + إعادة تسمية) |
+| **التعديل** | `patch` نصي/ست عشري بمعاينة ونسخة احتياطية واسترجاع تلقائي |
+| **APK دورة كاملة** | `decode → build → sign → java → install` مع تحقق فعلي من التوقيع |
+| **الدفعات** | `scan` لمجلد كامل → HTML/JSON/CSV مع تحييد حقن الصيغ |
+| **المقارنة** | `diff` مقاوم للإزاحة + HTML/PDF/JSON |
+| **الوكلاء** | قواعدي بلا إنترنت، أو LLM متوافق مع OpenAI عبر HTTPS فقط، بأدوات قراءة فقط |
+| **الويب** | لوحة محلية برمز Bearer/كوكي، allowlist مضيفين، قفل تحليل |
+| **التكاملات** | 12 موصلاً قراءة فقط (NVD، OSV، CISA KEV، VirusTotal، abuse.ch، ...) |
+
+## الأمان أولاً
+
+| الضابط | التنفيذ |
+|---|---|
+| التنفيذ | لا تنفيذ افتراضي؛ Sandbox يتطلب `--run --yes` |
+| الشبكة | HTTPS فقط، allowlist، رفض إعادة التوجيه، سقف استجابة |
+| المفاتيح | متغيرات بيئة فقط؛ لا تُكتب في `config.json` ولا السجلات |
+| الملفات | `config.json` و`state.json` و`workspaces/` مستبعدة من Git |
+| التعديل | نسخة احتياطية + تحقق PE/ZIP + استرجاع تلقائي |
+| الويب | `127.0.0.1` افتراضياً، رفض Host غير مسموح، رفض مسارات النظام |
+| سلسلة التوريد | 3 اعتمادات تشغيل فقط + SBOM + `SHA256SUMS` لكل إصدار |
+
+التفاصيل الكاملة: [`SECURITY.md`](SECURITY.md) · [`INTEGRATIONS.md`](INTEGRATIONS.md).
+
+## الجودة (مُتحقَّق منها)
+
+| المؤشر | القيمة |
+|---|---|
+| اختبارات `unittest` | **325** — بلا شبكة أو عيّنات حقيقية |
+| تغطية الوحدات | **75%** (حد CI: 70%) |
+| fuzzing | 8 خصائص × 300 + 120 = 2,520 حالة، بذرة ثابتة |
+| `selftest --full` | 29/29 |
+| `benchmark` | 5/5 |
+| CI | Windows · Python 3.12 و3.13 · lint + compile + tests + coverage + build + release dry-run |
+| الإصدار | SBOM (CycloneDX 1.5) + `SHA256SUMS` + ZIP محمول حتمي |
+
 ```powershell
-.\agents\run_all.ps1                                # Program Files
-.\agents\run_all.ps1 -ScanPath "D:\portable"        # مجلد برامج محمولة
-.\agents\run_all.ps1 -SkipInventory -Workers 12
-```
-
-## التكاملات والمهارات المهنية
-- كتالوج APIs ومستودعات وخدمات مجانية: `python repl.py integrations list`
-- مصادر الذكاء الاصطناعي/البرمجة/الأمن/الاستضافة/قواعد البيانات: `python repl.py integrations resources`
-- مهارات وكلاء محلية: `python repl.py skills list`
-- تشغيل وكيل بمهارة: `python repl.py agent apk\test.apk --mode llm --skill malware-triage,apk-analysis`
-- تكاملات abuse.ch الجديدة: `urlhaus` و`threatfox` (تتطلب `ABUSECH_AUTH_KEY`، قراءة فقط، وبلا رفع أو تحميل عيّنات)
-- الدليل الكامل وسياسة الأمان: [`INTEGRATIONS.md`](INTEGRATIONS.md)
-
-## تحصينات الإصدار 1.3.0
-- **توقيع APK:** الإخراج داخل مجلد مؤقت معزول، ثم التحقق من ZIP ومن مخططات v1/v2/v3/v3.1/v4 قبل اعتبار التوقيع ناجحاً.
-- **`android:exported`:** دلالات Android 12+ مع كشف المكونات المُصدّرة بلا `permission` وبلا قيمة صريحة عند `targetSdk >= 31`.
-- **حدود APK:** رفض الملفات الضخمة، وعدد المدخلات الكبير، والزيب بوم (الحجم غير المضغوط/نسبة الضغط)، وحجم البيان بعد الفك.
-- **حدود المحللات:** `pe_max_mb`, `strings_max_mb`, `yara_max_mb`, `yara_timeout`, وحدود `bindiff` مع تمثيل `skipped` بدلاً من استنزاف الذاكرة.
-- **Sandbox watchdog:** إنهاء شجرة العملية تلقائياً بعد المهلة (`taskkill /T /F`) مع سقف انتظار أقصى.
-- **الجودة:** `pyproject.toml`، `LICENSE` (MIT)، وCI على Windows عبر GitHub Actions.
-
-## الاختبارات والمساهمة
-```powershell
-python -m unittest discover -s tests -v   # بلا شبكة أو عينات خارجية
 python -m ruff check replatform tests repl.py
-python repl.py selftest --full
+python -m unittest discover -s tests
+python -m coverage run -m unittest discover -s tests; python -m coverage report
+python -m replatform selftest --full
 ```
-الترخيص: MIT — راجع [`LICENSE`](LICENSE). وسجل التغييرات في [`CHANGELOG.md`](CHANGELOG.md).
 
-## نتائج الاختبار الفعلي
-| الاختبار | النتيجة |
-|----------|---------|
-| جرد البرامج | 297 برنامج (73 registry + 142 appx + 82 اختصار) |
-| تحليل 29 ملف Python | 12 ثانية، 13 توقيعاً صالحاً مكتشفاً |
-| تعديل 7z.exe نصاً | ✓ نسخ احتياطي مطابق + PE سليم + البرنامج يعمل |
-| فحص التوقيع | يكشف Python Software Foundation ويحدد غير الموقّع بدقة |
+## التوثيق
 
-## ملاحظات مهمة
-- **إعادة تشغيل الطرفية** مطلوب مرة واحدة لتفعيل PATH الجديد (jadx, adb, cutter, diec).
-- تطبيقات F-Droid الموقّعة بمفتاح التطوير تحتاج **إلغاء التثبيت أولاً** إن كانت التوقيعات مختلفة، أو استخدم `adb install -r`.
-- `diec ملف.exe` يحدد النوع والمُجمِّع فوراً — نقطة البداية المثالية لأي تحليل EXE.
-- لرؤية ملف PE في Cutter: `cutter ملف.exe` (تحليل شعاعي كامل مع خريطة استدعاءات).
+| الملف | المحتوى |
+|---|---|
+| [`PLATFORM.md`](PLATFORM.md) | المرجع الكامل: كل أمر، الإعدادات، YARA، الويب، الإضافات |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | الطبقات، تدفق البيانات، القرارات المعمارية |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | التثبيت، الشبكة المعزولة، الترقية، استكشاف الأخطاء |
+| [`docs/QUALITY.md`](docs/QUALITY.md) | البوابات، توزيع الاختبارات، قائمة الإصدار |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | الأولويات P0/P1/P2 وغير المستهدف |
+| [`INTEGRATIONS.md`](INTEGRATIONS.md) | الموصلات، المفاتيح، سياسة القراءة فقط |
+| [`CHANGELOG.md`](CHANGELOG.md) | سجل التغييرات |
+
+## الترخيص والبيع
+
+- **النواة MIT** — استخدام شخصي وتجاري وتعديل وإعادة توزيع، بلا DRM ولا مفاتيح
+  تفعيل. راجع [`LICENSE`](LICENSE).
+- **الدخل من الخدمات**: دعم بأولوية، نشر مؤسسي، إضافات مخصصة، مراجعة أمنية،
+  وتدريب. راجع [`COMMERCIAL.md`](COMMERCIAL.md).
+- تراخيص الاعتمادات والأدوات الخارجية: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
+## القيود المعروفة
+
+- **Windows فقط** في 1.4.0 (Sandbox وأدوات APK/PE مرتبطة بالمنصة).
+- **الأدوات الخارجية غير مضمَّنة**: Ghidra/JDK/apktool/jadx/YARA/Rizin تُثبَّت
+  منفصلة؛ بدونها تظهر المحللات المرتبطة `skipped`.
+- **التكاملات لم تُجرَّب حياً** لغياب مفاتيح API؛ المصافحة ورفض غياب المفتاح
+  مُختبَران.
+- **المراقبة السلوكية محدودة**: Sandbox يلتقط `stdout` فقط، لا ETW/Procmon.
+- **لا توقيع كود** بعد؛ التوزيع عبر ZIP + بصمات، لا installer موقّع.
+
+## المساهمة
+
+اقرأ [`CONTRIBUTING.md`](CONTRIBUTING.md) و[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+للثغرات: [`SECURITY.md`](SECURITY.md) (قناة خاصة، لا Issue عام).
+للدعم: [`SUPPORT.md`](SUPPORT.md).
+
+---
+
+© 2026 REPLATFORM contributors · MIT

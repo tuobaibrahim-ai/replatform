@@ -1,0 +1,26 @@
+# اختياري: ثبّت `pre-commit` ثم `pre-commit install`.
+# لا يُشغَّل في CI؛ بوابات CI هي المرجع النهائي.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+        files: "^(replatform|tests)/.*\\.py$|^repl\\.py$"
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: \.(md|yar)$
+      - id: end-of-file-fixer
+        exclude: \.(yar)$
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+        exclude: \.(ps1|cmd|bat)$

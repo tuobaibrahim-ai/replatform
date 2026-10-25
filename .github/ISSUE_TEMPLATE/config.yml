@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ثغرة أمنية (خاص)
+    url: https://github.com/tuobaibrahim-ai/replatform/security/advisories/new
+    about: لا تفتح Issue عاماً لثغرة. استخدم قناة الإفصاح الخاصة.
+  - name: أسئلة ونقاشات
+    url: https://github.com/tuobaibrahim-ai/replatform/discussions
+    about: للأسئلة العامة والأفكار قبل فتح طلب ميزة.
+  - name: دليل النشر
+    url: https://github.com/tuobaibrahim-ai/replatform/blob/master/docs/DEPLOYMENT.md
+    about: التثبيت والترقية واستكشاف الأخطاء.
+  - name: الدعم التجاري
+    url: https://github.com/tuobaibrahim-ai/replatform/blob/master/COMMERCIAL.md
+    about: خيارات الدعم والنشر المؤسسي.

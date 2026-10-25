@@ -1,0 +1,104 @@
+name: بلاغ خطأ
+description: أبلغ عن خطأ قابل لإعادة الإنتاج في REPLATFORM
+title: "[bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        شكراً على البلاغ. **لا ترفق عيّنة برمجية خبيثة أو مفاتيح API أو مسارات شخصية.**
+        للثغرات الأمنية استخدم قناة `SECURITY.md` الخاصة، لا هذا النموذج.
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: قبل الإرسال
+      options:
+        - label: راجعت README وdocs/DEPLOYMENT.md وPLATFORM.md
+          required: true
+        - label: حدّثت إلى أحدث إصدار 1.4.x
+          required: true
+        - label: لا يحتوي البلاغ عيّنة خبيثة أو مفاتيح أو بيانات شخصية
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: الإصدار
+      description: ناتج `python -m replatform version`
+      placeholder: "REPLATFORM v1.4.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: نظام التشغيل
+      options:
+        - Windows 11
+        - Windows 10
+        - Windows Server
+        - آخر (اذكره أدناه)
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: إصدار Python
+      placeholder: "3.12.7"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: خطوات إعادة الإنتاج
+      description: أقل خطوات ممكنة، بالأوامر الدقيقة
+      placeholder: |
+        1. python -m replatform analyze sample.exe
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: النتيجة المتوقعة
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: النتيجة الفعلية
+      description: ألصق رسالة الخطأ كاملة إن وجدت
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: سجل أو مخرجات إضافية
+      description: احذف المسارات الشخصية والمفاتيح قبل اللصق
+      render: text
+    validations:
+      required: false
+  - type: input
+    id: sample
+    attributes:
+      label: وصف الملف (بلا إرفاق)
+      description: النوع، الحجم، وبصمة SHA-256 فقط
+      placeholder: "PE x64, 1.2 MB, sha256=..."
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: المجال
+      options:
+        - CLI
+        - تحليل PE
+        - تحليل APK
+        - YARA
+        - التفكيك / Ghidra / Rizin
+        - الدفعات / التقارير / PDF
+        - الوكلاء / مزوّد LLM
+        - التكاملات
+        - الواجهة الويب
+        - التثبيت / التغليف
+        - آخر
+    validations:
+      required: true

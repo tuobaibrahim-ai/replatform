@@ -4,33 +4,60 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "replatform"
-version = "1.3.1"
-description = "منصة عربية للهندسة العكسية وتحليل البرمجيات الخبيثة والذكاء الاصطناعي"
+version = "1.4.0"
+description = "Windows reverse-engineering and malware-analysis platform (PE/APK, YARA, Ghidra, AI agents)"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "REPLATFORM contributors" }]
-keywords = ["reverse-engineering", "malware-analysis", "security", "apk", "pe", "ai"]
+maintainers = [{ name = "REPLATFORM maintainers" }]
+keywords = [
+  "reverse-engineering", "malware-analysis", "security", "apk", "pe",
+  "yara", "ghidra", "threat-intelligence", "ai-agents",
+]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Environment :: Console",
   "Intended Audience :: Information Technology",
+  "Intended Audience :: Developers",
+  "Intended Audience :: System Administrators",
+  "Natural Language :: Arabic",
+  "Natural Language :: English",
   "Operating System :: Microsoft :: Windows",
+  "Operating System :: Microsoft :: Windows :: Windows 10",
+  "Operating System :: Microsoft :: Windows :: Windows 11",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Topic :: Security",
+  "Topic :: Software Development :: Disassemblers",
+  "Typing :: Typed",
 ]
+
 dependencies = [
   "pefile>=2024.8.26",
   "asn1crypto>=1.5.1",
   "certifi>=2024.2.2",
 ]
 
+[project.urls]
+Homepage = "https://github.com/tuobaibrahim-ai/replatform"
+Repository = "https://github.com/tuobaibrahim-ai/replatform"
+Documentation = "https://github.com/tuobaibrahim-ai/replatform/blob/master/PLATFORM.md"
+Changelog = "https://github.com/tuobaibrahim-ai/replatform/blob/master/CHANGELOG.md"
+Issues = "https://github.com/tuobaibrahim-ai/replatform/issues"
+Security = "https://github.com/tuobaibrahim-ai/replatform/security/policy"
+Commercial = "https://github.com/tuobaibrahim-ai/replatform/blob/master/COMMERCIAL.md"
+
 [project.optional-dependencies]
-dev = ["ruff>=0.6", "pytest>=8", "coverage>=7.4"]
+dev = [
+  "ruff>=0.6",
+  "pytest>=8",
+  "coverage>=7.4",
+  "build>=1.2",
+]
 ai = ["tiktoken>=0.7"]
 
 [project.scripts]
@@ -38,6 +65,9 @@ replatform = "replatform.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["replatform*"]
+
+[tool.setuptools.package-data]
+replatform = ["py.typed"]
 
 [tool.ruff]
 line-length = 100
@@ -61,6 +91,6 @@ omit = [
 ]
 
 [tool.coverage.report]
-fail_under = 45
+fail_under = 70
 skip_covered = true
 show_missing = true
