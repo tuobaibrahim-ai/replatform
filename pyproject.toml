@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "replatform"
-version = "1.3.0"
+version = "1.3.1"
 description = "منصة عربية للهندسة العكسية وتحليل البرمجيات الخبيثة والذكاء الاصطناعي"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -30,7 +30,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["ruff>=0.6", "pytest>=8"]
+dev = ["ruff>=0.6", "pytest>=8", "coverage>=7.4"]
 ai = ["tiktoken>=0.7"]
 
 [project.scripts]
@@ -49,3 +49,18 @@ select = ["F", "E9", "B"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+# نقاط الدخول (CLI/الواجهة/الاختبار الذاتي) تُختبَر تكاملياً عبر selftest،
+# لذا تُستثنى من قياس تغطية الوحدات ليبقى الحد ذا معنى.
+[tool.coverage.run]
+source = ["replatform"]
+omit = [
+  "replatform/cli.py",
+  "replatform/tools/selftest.py",
+  "replatform/web/server.py",
+]
+
+[tool.coverage.report]
+fail_under = 45
+skip_covered = true
+show_missing = true

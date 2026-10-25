@@ -30,5 +30,9 @@ jobs:
         run: python -m compileall -q replatform tests
       - name: Unit tests
         run: python -m unittest discover -s tests -v
+      - name: Coverage
+        run: |
+          python -m coverage run -m unittest discover -s tests
+          python -m coverage report
       - name: Self-test
         run: python repl.py selftest

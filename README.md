@@ -21,7 +21,8 @@ python repl.py ws report <id> --pdf --json  # تصدير PDF/JSON
 python repl.py benchmark             # تقييم قبول الوكيل (5 حالات، بلا شبكة)
 python repl.py selftest              # اختبار ذاتي سريع
 python repl.py selftest --full       # يشمل APK وRizin (29 فحصاً)
-python -m unittest discover -s tests -v  # اختبارات انحدار مستقلة (17 اختباراً)
+python -m unittest discover -s tests -v  # اختبارات انحدار مستقلة (112 اختباراً)
+python -m coverage run -m unittest discover -s tests; python -m coverage report  # تغطية الوحدات (حد 45%)
 python repl.py serve --open          # واجهة ويب محلية (أو --host + --token)
 python repl.py inventory             # جرد البرامج المثبتة
 python repl.py ws list               # مساحات العمل السابقة
@@ -30,6 +31,7 @@ python repl.py ws list               # مساحات العمل السابقة
 التوثيق الكامل: **[PLATFORM.md](PLATFORM.md)** — يشمل تحديد الملف المستهدف،
 أوامر التعديل والتطوير، YARA، التفكيك، واجهة الويب، إعداد النموذج اللغوي،
 واجهة الإضافات، البنية الداخلية، والأمان.
+English overview: **[README.en.md](README.en.md)**.
 
 ---
 

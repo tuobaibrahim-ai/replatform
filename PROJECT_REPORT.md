@@ -1,7 +1,7 @@
 # تقرير حالة مشروع REPLATFORM
 
-**الإصدار:** 1.3.0 · **تاريخ التقرير:** 2026-10-25 · **الترخيص:** MIT
-**المستودع:** `https://github.com/tuobaibrahim-ai/replatform` (خاص) · **الفرع:** `master` · **الوسم:** `v1.3.0`
+**الإصدار:** 1.3.1 · **تاريخ التقرير:** 2026-10-25 · **الترخيص:** MIT
+**المستودع:** `https://github.com/tuobaibrahim-ai/replatform` (خاص) · **الفرع:** `master` · **الوسم:** `v1.3.1`
 
 ---
 
@@ -15,16 +15,17 @@ REPLATFORM منصة ويندوز محلية للهندسة العكسية وتح
 | المؤشر | القيمة |
 |---|---|
 | كود الإنتاج | 40 ملف Python · 8,547 سطراً |
-| الاختبارات | 17 اختبار `unittest` (245 سطراً) |
+| الاختبارات | 122 اختبار `unittest` |
+| تغطية الوحدات | 48% (حد CI: 45%) |
 | الاختبار الذاتي | 29/29 ناجح (`selftest --full`) |
-| تقييم الوكيل | 5/5 (100%) في 0.53ث |
+| تقييم الوكيل | 5/5 (100%) في 0.7ث |
 | أوامر CLI | 21 أمراً |
 | المحللات | 6 |
 | موصلات التكامل | 12 (قراءة فقط) |
-| قواعد YARA | 10 قواعد في `rules/basic.yar` |
+| قواعد YARA | 19 قاعدة |
 | مهارات الوكلاء | 9 |
-| CI | 3 تشغيلات ناجحة على Windows (Python 3.12 و3.13) |
-| حالة Git | شجرة نظيفة · 3 commits · وسم `v1.3.0` |
+| CI | ناجح على Windows (Python 3.12 و3.13) |
+| حالة Git | شجرة نظيفة · وسم `v1.3.1` |
 
 ---
 
@@ -154,10 +155,11 @@ Windows Sandbox: الميزة `Containers-DisposableClientVM = Enabled`،
 |---|---|
 | `ruff check replatform tests repl.py` | ناجح |
 | `compileall` | ناجح |
-| `unittest` (17) | 17/17 OK |
+| `unittest` (122) | 122/122 OK |
+| `coverage` (وحدات المنطق) | 48% — الحد الأدنى 45% |
 | `selftest --full` | 29/29 (يشمل APK وRizin وGhidra وSandbox) |
 | `benchmark` | 5/5 (path_guard, compaction, timeout, usage/tokens, tool_budget) |
-| GitHub Actions | 3/3 ناجحة (3.12 و3.13) — lint + compile + unit + selftest |
+| GitHub Actions | ناجح (3.12 و3.13) — lint + compile + unit + coverage + selftest |
 
 ---
 
@@ -174,11 +176,11 @@ Windows Sandbox: الميزة `Containers-DisposableClientVM = Enabled`،
 
 **P2 — تحسينات:**
 
-3. قواعد YARA عشر فقط؛ لا حزم قواعد مجتمعية.
-4. لا قياس لتغطية الاختبارات (coverage) ولا fuzzing.
+3. قواعد YARA 19 قاعدة محلية؛ لا حزم قواعد مجتمعية (Sigma/خ) بعد.
+4. لا fuzzing بعد (تغطية الوحدات تُقاس الآن: 48%).
 5. CI يشغّل `selftest` السريع فقط؛ `--full` يحتاج أدوات خارجية غير متاحة على runners.
-6. التوثيق عربي بالكامل؛ لا README إنجليزي.
-7. لا حزم إصدار (installer/wheel منشور) ولا توقيع كود للأداة.
+6. التوثيق عربي أساساً مع دليل إنجليزي مختصر (`README.en.md`).
+7. لا installer بعد (حزمة wheel/sdist تُبنى وتُنشر مع الوسم).
 8. الاعتماد على ثنائيات خارجية (Ghidra/JDK/jadx) غير مثبّتة عبر pip.
 9. `cli.py` كبير (1074 سطراً) — مرشح للتفكيك إلى أوامر فرعية.
 
@@ -190,14 +192,16 @@ Windows Sandbox: الميزة `Containers-DisposableClientVM = Enabled`،
 |---|---|---|
 | P1 | تزويد `ABUSECH_AUTH_KEY` ثم `integrations check urlhaus --live --yes` | المالك |
 | P1 | تحديد نطاق المراقبة السلوكية (VM + Procmon/ETW) | المالك |
-| P2 | إضافة coverage إلى CI ورفع القواعد المجتمعية | الفريق |
-| P2 | تفكيك `cli.py` وإضافة README إنجليزي | الفريق |
-| P2 | بناء حزمة إصدار ووسم `v1.3.1` عند أول تغيير وظيفي | الفريق |
+| P2 | رفع التغطية إلى 60% وإضافة fuzzing للـ parsers | الفريق |
+| P2 | تفكيك `cli.py` إلى أوامر فرعية | الفريق |
+| P2 | إضافة installer موقّع عند الحاجة | الفريق |
 
 ---
 
 ## 11. سجل الإصدارات المختصر
 
+- **1.3.1 (2026-10-25):** جودة — 122 اختباراً (منها 34 تعاقدية للموصلات)،
+  تغطية 48% بحد CI 45%، 9 قواعد YARA إضافية، `README.en.md`، وترقية إجراءات CI.
 - **1.3.0 (2026-10-23):** تقوية شاملة — validate/decode/sign آمن، دلالات
   `android:exported`، حدود المحللات، Sandbox watchdog، URLhaus/ThreatFox،
   TLS مع certifi، 17 اختباراً، CI، MIT.
