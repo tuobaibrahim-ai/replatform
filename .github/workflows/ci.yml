@@ -34,6 +34,9 @@ jobs:
         run: |
           python -m coverage run -m unittest discover -s tests
           python -m coverage report
+      - name: Dependency audit
+        if: matrix.python-version == '3.12'
+        run: python -m pip_audit -r requirements.txt --progress-spinner off
       - name: Build package
         if: matrix.python-version == '3.12'
         run: python -m build

@@ -4,7 +4,7 @@
 > scanning, Ghidra/Rizin disassembly, binary diffing, batch triage, constrained
 > AI agents, and a token-protected local web dashboard.
 
-**Version 1.4.0 · MIT License · Windows 10/11 · Python 3.11+ · Beta**
+**Version 1.4.1 · MIT License · Windows 10/11 · Python 3.11+ · Beta**
 
 [Arabic README](README.md) · [Full reference](PLATFORM.md) · [Deployment](docs/DEPLOYMENT.md) · [Architecture](docs/ARCHITECTURE.md) · [Quality](docs/QUALITY.md)
 
@@ -35,9 +35,9 @@ and confirmed rather than implicit.
 ### Portable bundle (recommended)
 
 ```powershell
-Get-FileHash .\replatform-1.4.0-portable.zip -Algorithm SHA256
+Get-FileHash .\replatform-1.4.1-portable.zip -Algorithm SHA256
 # compare with SHA256SUMS from the release page
-cd replatform-1.4.0
+cd replatform-1.4.1
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 .\replatform.cmd version
 ```
@@ -115,12 +115,12 @@ See [`SECURITY.md`](SECURITY.md) for the threat model and reporting channel.
 
 | Metric | Value |
 |---|---|
-| `unittest` tests | **325** — no network, no real samples |
-| Unit coverage | **75%** (CI gate: 70%) |
+| `unittest` tests | **433** — no network, no real samples |
+| Unit coverage | **92%** (CI gate: 85%) |
 | Fuzzing | 8 properties × 300 + 120 = 2,520 cases, fixed seed |
 | `selftest --full` | 29/29 |
 | `benchmark` | 5/5 |
-| CI | Windows · Python 3.12 & 3.13 · lint + compile + tests + coverage + build + release dry-run |
+| CI | Windows · Python 3.12 & 3.13 · lint + compile + tests + coverage + dependency audit + build + release dry-run |
 | Release | CycloneDX 1.5 SBOM + `SHA256SUMS` + deterministic portable ZIP |
 
 ```powershell
@@ -157,11 +157,12 @@ python -m replatform selftest --full
 
 ## Known limitations
 
-- **Windows only** in 1.4.0.
+- **Windows only** in 1.4.1.
 - **External tools are not bundled** (Ghidra/JDK/apktool/jadx/YARA/Rizin);
   related analyzers report `skipped` when missing.
-- **Integrations are not live-tested** (no API keys available); TLS handshake
-  and missing-key refusal are verified.
+- **The three keyless connectors** (NVD/OSV/CISA KEV) passed live checks
+  (TLSv1.3); keyed connectors are untested pending owner keys, while
+  missing-key refusal is verified.
 - **Behavioral monitoring is limited**: Sandbox captures `stdout` only.
 - **No code signing yet**; distribution is ZIP + checksums.
 

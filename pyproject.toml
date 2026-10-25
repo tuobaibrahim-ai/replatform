@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "replatform"
-version = "1.4.0"
+version = "1.4.1"
 description = "Windows reverse-engineering and malware-analysis platform (PE/APK, YARA, Ghidra, AI agents)"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -39,7 +39,7 @@ classifiers = [
 dependencies = [
   "pefile>=2024.8.26",
   "asn1crypto>=1.5.1",
-  "certifi>=2024.2.2",
+  "certifi>=2026.10.19",
 ]
 
 [project.urls]
@@ -57,6 +57,7 @@ dev = [
   "pytest>=8",
   "coverage>=7.4",
   "build>=1.2",
+  "pip-audit>=2.7",
 ]
 ai = ["tiktoken>=0.7"]
 
@@ -91,6 +92,6 @@ omit = [
 ]
 
 [tool.coverage.report]
-fail_under = 70
+fail_under = 85
 skip_covered = true
 show_missing = true

@@ -1,5 +1,29 @@
 # سجل التغييرات
 
+## 1.4.1 — 2026-10-25
+
+### الجودة والاختبارات
+- **433 اختبار `unittest`** (كانت 325)، وتغطية **92%** (كانت 75%) بحد CI **85%**
+  (كان 70%).
+- `tests/test_coverage_core.py` (57): `util`، `registry`، `export`، `__main__`،
+  `pe_analyzer`، و`apk_analyzer` — بما يشمل التوقيع v1–v4 وحدود APK/PE.
+- `tests/test_coverage_tools.py` (51): `benchmark`، `apk_tools`، `sandbox`
+  (watchdog والمهلات)، و`bindiff` (CDC، تقارير HTML، حدود التحليل).
+- الوحدات الأضعف: `benchmark` 19%→100%، `sandbox` 63%→100%، `pe_analyzer`
+  52%→100%، `registry` 38%→98%، `util` 58%→98%، `apk_tools` 46%→99%،
+  `bindiff` 32%→93%، `apk_analyzer` 65%→95%.
+
+### الأمان وسلسلة التوريد
+- `pip-audit` ضمن اعتمادات التطوير وخطوة CI على Python 3.12 (`-r requirements.txt`).
+- رفع `certifi` إلى `>=2026.10.19` لمعالجة `PYSEC-2026-4320` (كان 2026.10.18).
+- تحقق حي من الموصلات بلا مفاتيح: NVD وOSV وCISA KEV عبر TLSv1.3، دون رفع عيّنات.
+
+### التغييرات
+- ترقية `actions/checkout@v7` و`actions/setup-python@v7`.
+- تحديث `docs/QUALITY.md` و`docs/ROADMAP.md` و`PROJECT_REPORT.md` و`README*`
+  بالأرقام والحالة الفعلية.
+- لا تغيير سلوكي في واجهة CLI أو المحللات؛ إصدار تقوية جودة وأمان.
+
 ## 1.4.0 — 2026-10-25
 
 ### طبقة المنتج (جديد)

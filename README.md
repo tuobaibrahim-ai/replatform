@@ -2,7 +2,7 @@
 
 **منصة ويندوز محلية للهندسة العكسية وتحليل البرمجيات — PE · APK · YARA · Ghidra · وكلاء ذكاء اصطناعي مقيدون.**
 
-الإصدار **1.4.0** · رخصة **MIT** · Windows 10/11 · Python 3.11+ · حالة **Beta**
+الإصدار **1.4.1** · رخصة **MIT** · Windows 10/11 · Python 3.11+ · حالة **Beta**
 
 [English overview](README.en.md) · [التوثيق الكامل](PLATFORM.md) · [دليل النشر](docs/DEPLOYMENT.md) · [البنية](docs/ARCHITECTURE.md) · [الجودة](docs/QUALITY.md)
 
@@ -26,11 +26,11 @@
 ### حزمة محمولة (موصى به)
 
 ```powershell
-# 1) نزّل replatform-1.4.0-portable.zip من صفحة الإصدارات وتحقق من البصمة
-Get-FileHash .\replatform-1.4.0-portable.zip -Algorithm SHA256
+# 1) نزّل replatform-1.4.1-portable.zip من صفحة الإصدارات وتحقق من البصمة
+Get-FileHash .\replatform-1.4.1-portable.zip -Algorithm SHA256
 
 # 2) فك الضغط ثم
-cd replatform-1.4.0
+cd replatform-1.4.1
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 
 # 3) تحقق
@@ -96,12 +96,12 @@ python -m replatform selftest --full       # 29 فحصاً للبيئة والأ
 
 | المؤشر | القيمة |
 |---|---|
-| اختبارات `unittest` | **325** — بلا شبكة أو عيّنات حقيقية |
-| تغطية الوحدات | **75%** (حد CI: 70%) |
+| اختبارات `unittest` | **433** — بلا شبكة أو عيّنات حقيقية |
+| تغطية الوحدات | **92%** (حد CI: 85%) |
 | fuzzing | 8 خصائص × 300 + 120 = 2,520 حالة، بذرة ثابتة |
 | `selftest --full` | 29/29 |
 | `benchmark` | 5/5 |
-| CI | Windows · Python 3.12 و3.13 · lint + compile + tests + coverage + build + release dry-run |
+| CI | Windows · Python 3.12 و3.13 · lint + compile + tests + coverage + dependency audit + build + release dry-run |
 | الإصدار | SBOM (CycloneDX 1.5) + `SHA256SUMS` + ZIP محمول حتمي |
 
 ```powershell
@@ -133,11 +133,11 @@ python -m replatform selftest --full
 
 ## القيود المعروفة
 
-- **Windows فقط** في 1.4.0 (Sandbox وأدوات APK/PE مرتبطة بالمنصة).
+- **Windows فقط** في 1.4.1 (Sandbox وأدوات APK/PE مرتبطة بالمنصة).
 - **الأدوات الخارجية غير مضمَّنة**: Ghidra/JDK/apktool/jadx/YARA/Rizin تُثبَّت
   منفصلة؛ بدونها تظهر المحللات المرتبطة `skipped`.
-- **التكاملات لم تُجرَّب حياً** لغياب مفاتيح API؛ المصافحة ورفض غياب المفتاح
-  مُختبَران.
+- **الموصلات المجانية الثلاثة** (NVD/OSV/CISA KEV) جُرِّبت حياً بنجاح (TLSv1.3)؛
+  الموصلات ذات المفاتيح لم تُجرَّب لغياب مفاتيح المالك، ورفض غياب المفتاح مُختبَر.
 - **المراقبة السلوكية محدودة**: Sandbox يلتقط `stdout` فقط، لا ETW/Procmon.
 - **لا توقيع كود** بعد؛ التوزيع عبر ZIP + بصمات، لا installer موقّع.
 
