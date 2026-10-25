@@ -34,6 +34,23 @@ python -m unittest discover -s tests  # 112 regression tests
 
 ---
 
+## Installation
+
+The platform expects a **checkout**, because external tools (`tools/`), rules
+(`rules/`), and agent skills (`skills/`) live beside the code:
+
+```powershell
+git clone https://github.com/tuobaibrahim-ai/replatform.git
+cd replatform
+python -m pip install -e ".[dev]"
+```
+
+Release artifacts (`*.whl`, `*.tar.gz`) contain the Python package plus rules,
+skills, scripts, and tests in the sdist. A pip-installed wheel provides the
+library/CLI only; run it from the source tree for the full toolchain.
+
+---
+
 ## Capabilities
 
 | Area | What you get |

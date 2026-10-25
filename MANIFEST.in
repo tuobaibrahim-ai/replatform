@@ -1,0 +1,16 @@
+include LICENSE
+include CHANGELOG.md
+include PLATFORM.md
+include INTEGRATIONS.md
+include PROJECT_REPORT.md
+include README.en.md
+include config.example.json
+include requirements.txt
+include repl.py
+
+recursive-include rules *.yar
+recursive-include skills *.md
+recursive-include scripts *.py *.ps1 *.java
+recursive-include tests *.py
+recursive-include plugins *.py
+recursive-include .github *.yml
