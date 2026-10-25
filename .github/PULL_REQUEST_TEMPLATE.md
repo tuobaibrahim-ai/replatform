@@ -28,7 +28,7 @@ python -m replatform selftest
 ## قائمة التحقق
 
 - [ ] أضفت/حدّثت اختبارات تغطي السلوك الجديد.
-- [ ] `ruff` و`compileall` و`unittest` و`coverage` (≥ 85%) و`pip-audit` ناجحة محلياً.
+- [ ] `ruff` (مع قواعد `S`) و`compileall` و`unittest` و`coverage` (≥ 90%) و`pip-audit` ناجحة محلياً.
 - [ ] لا أسرار، ولا عيّنات، ولا مخرجات مولّدة في الفرق.
 - [ ] حدّثت `CHANGELOG.md` للتغييرات المرئية للمستخدم.
 - [ ] حدّثت التوثيق ذا الصلة (`README.md` / `docs/` / `PLATFORM.md`).

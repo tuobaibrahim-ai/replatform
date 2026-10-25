@@ -156,7 +156,7 @@ class SafeHTTPClient:
                 "Content-Type", "application/x-www-form-urlencoded"
             )
 
-        request = urllib.request.Request(
+        request = urllib.request.Request(  # noqa: S310 — هدف https + allowlist مضيفين
             target, data=data, headers=request_headers, method=method
         )
         try:

@@ -353,7 +353,7 @@ def _check_sandbox_plan(temp: Path) -> str:
     plan = sandbox.build_plan(sample, out=temp / "sandbox-plan", timeout=15)
     wsb = Path(plan["wsb"])
     assert wsb.is_file(), "لم يُكتب ملف .wsb"
-    root = ET.parse(wsb).getroot()
+    root = ET.parse(wsb).getroot()  # noqa: S314 — ملف .wsb ناتج محلي موثوق
     assert root.findtext("Networking") == "Disable", "الشبكة غير معطلة"
     folders = root.findall("./MappedFolders/MappedFolder")
     assert len(folders) == 2, "عدد المجلدات المعزولة غير متوقع"
@@ -373,7 +373,7 @@ def _check_web_auth(temp: Path) -> str:
     from ..web.server import make_server
 
     try:
-        make_server("0.0.0.0", 0, "", [])
+        make_server("0.0.0.0", 0, "", [])  # noqa: S104 — اختبار سلبي: يجب أن يُرفض
     except ValueError:
         pass
     else:
@@ -387,11 +387,11 @@ def _check_web_auth(temp: Path) -> str:
     thread.start()
 
     def get(path: str, headers: dict | None = None):
-        request = urllib.request.Request(
+        request = urllib.request.Request(  # noqa: S310 — خادم اختبار محلي على loopback
             f"http://127.0.0.1:{port}{path}", headers=headers or {}
         )
         try:
-            with urllib.request.urlopen(request, timeout=5) as response:
+            with urllib.request.urlopen(request, timeout=5) as response:  # noqa: S310 — loopback فقط
                 return response.status
         except urllib.error.HTTPError as exc:
             return exc.code

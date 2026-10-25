@@ -585,7 +585,7 @@ def serve(
 ) -> None:
     httpd = make_server(host, port, token, allowed_hosts)
     bound_host, bound_port = httpd.server_address[:2]
-    display_host = "127.0.0.1" if bound_host in ("0.0.0.0", "::") else bound_host
+    display_host = "127.0.0.1" if bound_host in ("0.0.0.0", "::") else bound_host  # noqa: S104 — مقارنة لا ربط
     url = f"http://{display_host}:{bound_port}/"
     print(f"واجهة REPLATFORM جاهزة: {url}")
     if token:

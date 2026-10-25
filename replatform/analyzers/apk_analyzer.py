@@ -166,8 +166,16 @@ def _intent_filter_info(element) -> tuple[bool, bool]:
     return has_filter, launcher
 
 
+def _parse_manifest_xml(xml_text: str):
+    """يحلّل بيان APK بعد رفض DOCTYPE/ENTITY — حماية من تضخّم الكيانات (billion laughs)."""
+    upper = xml_text.upper()
+    if "<!DOCTYPE" in upper or "<!ENTITY" in upper:
+        raise ValueError("بيان APK يحتوي DOCTYPE/ENTITY غير مسموح — رُفض حمايةً للتحليل.")
+    return ET.fromstring(xml_text)  # noqa: S314 — محصَّن أعلاه، والحجم محدود في decode_apk
+
+
 def parse_manifest(xml_text: str, meta: dict | None = None) -> dict:
-    root = ET.fromstring(xml_text)
+    root = _parse_manifest_xml(xml_text)
     info: dict = {
         "package": _attr(root, "package") or "",
         "version_name": "",

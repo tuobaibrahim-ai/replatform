@@ -643,6 +643,21 @@ class APKAnalyzerCoverageTests(TempDirTest):
             decoded = apk_analyzer.decode_apk(str(path))
         self.assertEqual(decoded["meta"]["min_sdk"], "")
 
+    def test_parse_manifest_rejects_doctype_and_entities(self) -> None:
+        payloads = (
+            '<!DOCTYPE manifest [<!ENTITY x "y">]><manifest>&x;</manifest>',
+            '<manifest><!ENTITY x "y"></manifest>',
+            '<!doctype manifest><manifest/>',
+        )
+        for payload in payloads:
+            with self.subTest(payload=payload[:24]):
+                with self.assertRaises(ValueError):
+                    apk_analyzer.parse_manifest(payload)
+
+    def test_parse_manifest_accepts_plain_xml(self) -> None:
+        info = apk_analyzer.parse_manifest("<manifest package='ok'/>")
+        self.assertEqual(info["package"], "ok")
+
     def test_sdk_int_parsing(self) -> None:
         self.assertEqual(apk_analyzer._sdk_int("33"), 33)
         self.assertEqual(apk_analyzer._sdk_int("33.0"), 33)

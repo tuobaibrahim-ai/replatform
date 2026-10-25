@@ -102,7 +102,7 @@ class OpenAIProvider:
         headers = {"Content-Type": "application/json"}
         if self.key:
             headers["Authorization"] = f"Bearer {self.key}"
-        request = urllib.request.Request(
+        request = urllib.request.Request(  # noqa: S310 — المخطط https مُتحقَّق في __init__
             f"{self.base_url}/chat/completions",
             data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
             headers=headers,

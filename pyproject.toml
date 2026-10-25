@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "replatform"
-version = "1.4.1"
+version = "1.4.2"
 description = "Windows reverse-engineering and malware-analysis platform (PE/APK, YARA, Ghidra, AI agents)"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -75,7 +75,26 @@ line-length = 100
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["F", "E9", "B"]
+# S = قواعد flake8-bandit: فحص أمني ثابت مكافئ لـ bandit بلا اعتمادية إضافية.
+select = ["F", "E9", "B", "S"]
+ignore = [
+  # subprocess بقوائم وسائط بلا shell؛ S602 (shell=True) يبقى مفعّلاً.
+  "S603",
+  # تشغيل برامج دون shell مقصود، والمسارات تُحلّ عبر shutil.which.
+  "S606",
+  "S607",
+  # تنظيف بأفضل جهد: لا معنى لتسجيل فشل حذف ملف مؤقت.
+  "S110",
+  # فحص ترميزات بديلة: الاستمرار عند فشل ترميز متوقع.
+  "S112",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# assert أداة تحقق مقصودة في الاختبار الذاتي والمقارنة القياسية.
+"replatform/tools/selftest.py" = ["S101"]
+"replatform/tools/benchmark.py" = ["S101"]
+# الاختبارات تستخدم assert وبذرة عشوائية حتمية (ليست تشفيراً).
+"tests/*" = ["S101", "S311"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -92,6 +111,6 @@ omit = [
 ]
 
 [tool.coverage.report]
-fail_under = 85
+fail_under = 90
 skip_covered = true
 show_missing = true

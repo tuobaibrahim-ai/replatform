@@ -1,31 +1,32 @@
-# الجودة والتحقق — REPLATFORM 1.4.1
+# الجودة والتحقق — REPLATFORM 1.4.2
 
 ## 1. بوابات الجودة
 
 | البوابة | الأمر | الشرط |
 |---|---|---|
 | Lint | `python -m ruff check replatform tests repl.py` | صفر أخطاء |
+| فحص أمني ثابت | نفس الأمر أعلاه (قواعد `S` مدمجة) | صفر نتائج غير مبرَّرة |
 | Compile | `python -m compileall -q replatform tests` | نجاح |
-| Unit tests | `python -m unittest discover -s tests` | 433/433 |
-| Coverage | `python -m coverage run -m unittest discover -s tests` | ≥ 85% |
+| Unit tests | `python -m unittest discover -s tests` | 556/556 |
+| Coverage | `python -m coverage run -m unittest discover -s tests` | ≥ 90% |
 | Dependency audit | `python -m pip_audit -r requirements.txt` | صفر ثغرات معروفة |
 | Self-test | `python -m replatform selftest` | نجاح |
 | Full self-test | `python -m replatform selftest --full` | 29/29 (يدوي، أدوات خارجية) |
 | Benchmark | `python -m replatform benchmark` | 5/5 |
 | Release | `python -m replatform.tools.release --portable` | SBOM + بصمات + ZIP |
 
-CI (`.github/workflows/ci.yml`) يشغّل Lint وCompile وUnit وCoverage وDependency
-audit وSelf-test على Windows مع Python 3.12 و3.13، إضافة إلى بناء الحزم
-وتشغيل أدوات الإصدار (dry run) على Python 3.12.
+CI (`.github/workflows/ci.yml`) يشغّل Lint (مع `S`) وCompile وUnit وCoverage
+وDependency audit وSelf-test على Windows مع Python 3.12 و3.13، إضافة إلى بناء
+الحزم وتشغيل أدوات الإصدار (dry run) على Python 3.12.
 
 ## 2. الوضع الفعلي (2026-10-25)
 
 | المؤشر | القيمة |
 |---|---|
-| اختبارات `unittest` | **433** |
-| تغطية الوحدات | **92%** (الحد 85%) |
+| اختبارات `unittest` | **556** |
+| تغطية الوحدات | **95%** (الحد 90%) |
 | اختبارات فاشلة | 0 |
-| `ruff` | ناجح |
+| `ruff` (بما فيه `S`) | ناجح |
 | `pip-audit` | صفر ثغرات معروفة |
 | `selftest --full` | 29/29 |
 | `benchmark` | 5/5 |
@@ -33,15 +34,18 @@ audit وSelf-test على Windows مع Python 3.12 و3.13، إضافة إلى ب�
 | محللات | 6 |
 | موصلات | 12 (قراءة فقط) |
 | موصلات جُرِّبت حياً | 3 بلا مفاتيح (NVD/OSV/CISA KEV) |
+| موصلات مغطاة باختبارات fixtures | 12/12 |
 
 ## 3. توزيع الاختبارات
 
 | الملف | العدد | التغطية |
 |---|---|---|
 | `tests/test_agents.py` | 63 | المزوّدون، إعادة التوجيه، الأدوات، الحلقة، الضغط، التوكنات |
-| `tests/test_coverage_core.py` | 57 | `util`، `registry`، `export`، `__main__`، `pe_analyzer`، `apk_analyzer` |
+| `tests/test_coverage_core.py` | 59 | `util`، `registry`، `export`، `__main__`، `pe_analyzer`، `apk_analyzer` |
+| `tests/test_connector_fixtures.py` | 53 | fixtures لكل الموصلات الاثني عشر (تطبيع + 404 + حدود) |
 | `tests/test_coverage_tools.py` | 51 | `benchmark`، `apk_tools`، `sandbox`، `bindiff` |
-| `tests/test_connectors.py` | 34 | الموصلات الاثنا عشر بلا شبكة أو مفاتيح |
+| `tests/test_coverage_extra.py` | 50 | `patcher`، `tokenizer`، `strings_analyzer`، `yara_engine`، `skills` |
+| `tests/test_connectors.py` | 34 | الكتالوج، HTTPS، المفاتيح، التعطيل الافتراضي |
 | `tests/test_cli.py` | 25 | لقطة سطح 21 أمراً + التوزيع + المساعدات |
 | `tests/test_core.py` | 24 | الإعدادات، الحالة، مساحات العمل، المهارات، التقارير |
 | `tests/test_http.py` | 24 | allowlist، HTTPS، الحدود، الأخطاء، إعادة التوجيه |
@@ -50,6 +54,7 @@ audit وSelf-test على Windows مع Python 3.12 و3.13، إضافة إلى ب�
 | `tests/test_batch_export.py` | 22 | الدفعات، CSV injection، HTML، PDF |
 | `tests/test_analyzers.py` | 19 | PE، strings، الوكيل القواعدي، حواجز الويب |
 | `tests/test_tools.py` | 19 | patch، bindiff، خطط Sandbox |
+| `tests/test_consistency.py` | 18 | اتساق الإصدار والحوكمة وبوابات CI |
 | `tests/test_hardening.py` | 17 | `android:exported`، حدود APK، التوقيع، watchdog، التكاملات |
 | `tests/test_ghidra.py` | 14 | الاكتشاف، النجاح، المهلة، الأخطاء |
 | `tests/test_engines.py` | 9 | YARA، تقارير المقارنة، حدود Sandbox |
@@ -57,17 +62,34 @@ audit وSelf-test على Windows مع Python 3.12 و3.13، إضافة إلى ب�
 
 ## 4. سياسة التغطية
 
-- الحد **85%** مفروض في `pyproject.toml` ويفشل البناء تحته (الفعلي 92%).
+- الحد **90%** مفروض في `pyproject.toml` ويفشل البناء تحته (الفعلي 95%).
 - تُستثنى ثلاث نقاط دخول: `cli.py`، `tools/selftest.py`، `web/server.py`.
   **السبب:** تُختبَر تكاملياً (لقطة CLI + `selftest` + فحص يدوي للواجهة)،
   وقياسها كوحدات يُخفّض الرقم دون دلالة على جودة المنطق. الاستثناء موثّق في
   `pyproject.toml` ولا يُوسَّع بلا مراجعة.
 - التغطية ليست هدفاً بحد ذاتها: كل إصلاح يضيف اختبار انحدار يفشل قبله.
-- الوحدات التي كانت الأضعف في 1.4.0 (`benchmark` 19%، `bindiff` 32%،
-  `registry` 38%، `apk_tools` 46%، `pe_analyzer` 52%، `util` 58%،
-  `sandbox` 63%، `apk_analyzer` 65%) أصبحت بين 93% و100% في 1.4.1.
+- مسار التحسّن: 48% (1.3) → 75% (1.4.0) → 92% (1.4.1) → **95% (1.4.2)**.
 
-## 5. الاختبار الحتمي (Fuzzing)
+## 5. الفحص الأمني الثابت
+
+بدل إضافة `bandit` (يفشل تثبيته على Python 3.15 لاحتياجه بناء PyYAML)، فُعّلت
+قواعد **flake8-bandit** (`S`) داخل `ruff` — نفس المحرك، بلا اعتمادية جديدة،
+وتعمل في CI على 3.12 و3.13.
+
+| القاعدة | القرار | التبرير |
+|---|---|---|
+| `S101` | مستثناة في `selftest`/`benchmark`/`tests` | `assert` أداة تحقق مقصودة |
+| `S110`/`S112` | مستثناة | تنظيف/فحص ترميزات بأفضل جهد |
+| `S603`/`S606`/`S607` | مستثناة | تنفيذ بقوائم وسائط بلا shell؛ `S602` (`shell=True`) يبقى مفعّلاً |
+| `S310` | `noqa` موضعي (3) | المخطط `https` مُتحقَّق، أو loopback في اختبار محلي |
+| `S314` | `noqa` موضعي + تحصين | `apk_analyzer` يرفض `DOCTYPE`/`ENTITY` قبل التحليل |
+| `S104` | `noqa` موضعي (2) | مقارنة/اختبار سلبي، لا ربط فعلي بكل الواجهات |
+
+**تحصين 1.4.2:** `_parse_manifest_xml` يرفض أي `DOCTYPE` أو `ENTITY` قبل
+`ElementTree.fromstring`، ما يمنع تضخّم الكيانات (billion laughs) من بيان APK
+غير موثوق. يغطيه اختباران (رفض ثلاث صيغ + قبول XML عادي).
+
+## 6. الاختبار الحتمي (Fuzzing)
 
 `tests/test_fuzz.py` ببذرة ثابتة `20261025`:
 
@@ -77,7 +99,7 @@ audit وSelf-test على Windows مع Python 3.12 و3.13، إضافة إلى ب�
 - يتحقق من ثوابت بيان APK: الحزمة، عدد الأنشطة، وعدم سالبية العدادات.
 - **قابل لإعادة الإنتاج:** البذرة ثابتة، فلا تقلبات عشوائية في CI.
 
-## 6. الاختبار الذاتي
+## 7. الاختبار الذاتي
 
 `selftest` يفحص بيئة التشغيل الفعلية (لا بدائل وهمية):
 
@@ -85,25 +107,27 @@ audit وSelf-test على Windows مع Python 3.12 و3.13، إضافة إلى ب�
 - PE/APK وهميان، YARA، patch + استرجاع، تقارير، CSV.
 - `--full` يضيف APK حقيقياً (فك/بناء/توقيع) وRizin وGhidra وSandbox عند توفرها.
 
-## 7. مراجعة الإصدار (Release Checklist)
+## 8. مراجعة الإصدار (Release Checklist)
 
-- [ ] `pyproject.toml` و`replatform/__init__.py` و`CITATION.cff` بنفس الإصدار.
+- [ ] `pyproject.toml` و`replatform/__init__.py` و`CITATION.cff` بنفس الإصدار
+      (يفرضه `tests/test_consistency.py`).
 - [ ] `CHANGELOG.md` يحتوي قسماً للإصدار بتاريخه.
-- [ ] `ruff` + `compileall` + `unittest` + `coverage` + `pip-audit` + `selftest` ناجحة.
+- [ ] `ruff` (مع `S`) + `compileall` + `unittest` + `coverage` + `pip-audit` + `selftest` ناجحة.
 - [ ] `python -m replatform.tools.release --portable` ينتج ZIP وSBOM وبصمات.
 - [ ] `python -m replatform.tools.release --verify` يعيد `ok: true`.
 - [ ] فحص ZIP: لا `__pycache__`، لا عيّنات، لا `config.json`، لا `.venv`.
 - [ ] بناء `sdist` و`wheel` والتحقق من محتواهما.
 - [ ] وسم `vX.Y.Z` ودفعه، ثم GitHub Release بالمخرجات.
 - [ ] CI أخضر على الوسم.
+- [ ] تنزيل الأصول المنشورة والتحقق من مطابقتها لـ `SHA256SUMS` المنشور.
+- [ ] تشغيل `unittest` من الحزمة المنشورة نفسها.
 
-## 8. القيود المعروفة
+## 9. القيود المعروفة
 
 | القيد | الأثر | الحالة |
 |---|---|---|
-| موصلات ذات مفاتيح | لم تُجرَّب استجابات حية | موثّق؛ ينتظر مفاتيح المالك |
+| موصلات ذات مفاتيح | لم تُجرَّب استجابات حية | التطبيع مغطى بـ fixtures؛ ينتظر مفاتيح المالك |
 | المراقبة السلوكية | Sandbox يلتقط `stdout` فقط | حد معماري معلن |
 | لا توقيع كود | Windows SmartScreen قد يحذّر | حزمة ZIP + بصمات بدلاً من installer موقّع |
 | أدوات خارجية غير مضمَّنة | ميزات APK/Ghidra تتطلب تثبيتاً منفصلاً | مقصود (تراخيص وحجم) |
-| `bandit` غير مُفعَّل | تحليل أمني ثابت إضافي | مؤجَّل؛ `pip-audit` وDependabot مفعّلان |
 | `cli.py` كبير | صيانة أصعب | مؤجَّل بعد تثبيت اختبارات السطح |

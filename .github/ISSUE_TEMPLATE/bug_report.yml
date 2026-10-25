@@ -24,7 +24,7 @@ body:
     attributes:
       label: الإصدار
       description: ناتج `python -m replatform version`
-      placeholder: "REPLATFORM v1.4.1"
+      placeholder: "REPLATFORM v1.4.2"
     validations:
       required: true
   - type: dropdown
