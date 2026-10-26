@@ -169,8 +169,8 @@ powershell -ExecutionPolicy Bypass -File .\upgrade.ps1 -Bundle .\replatform-1.5.
 powershell -ExecutionPolicy Bypass -File .\upgrade.ps1 -Bundle .\replatform-1.5.1-portable.zip -Sha256 <hash> -Yes
 ```
 
-الترقية تحفظ `config.json` و`workspaces/` و`plugins/` و`license.json`، وتُنشئ نسخة
-تراجع كاملة. بعدها:
+الترقية تحفظ `config.json` و`workspaces/` و`plugins/` و`license.json` و`audit.jsonl`
+(سجل التدقيق وقفل التزامن)، وتُنشئ نسخة تراجع كاملة. بعدها:
 
 ```powershell
 python -m replatform doctor

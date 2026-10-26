@@ -16,16 +16,17 @@ python repl.py doctor --bundle support.zip   # بلا أسرار، للمشار�
 
 ```powershell
 # 1) نزّل الحزمة وSHA256SUMS، ثم تحقق
-Get-FileHash -Algorithm SHA256 .\replatform-1.5.0-portable.zip
+Get-FileHash -Algorithm SHA256 .\replatform-1.5.1-portable.zip
 
 # 2) معاينة (لا تغيير)
-python repl.py upgrade .\replatform-1.5.0-portable.zip --dry-run
+python repl.py upgrade .\replatform-1.5.1-portable.zip --dry-run
 
 # 3) تطبيق مع البصمة
-python repl.py upgrade .\replatform-1.5.0-portable.zip --sha256 <hash> --yes
+python repl.py upgrade .\replatform-1.5.1-portable.zip --sha256 <hash> --yes
 ```
 
-يُحفظ تلقائياً: `config.json`, `workspaces/`, `plugins/`, `license.json`.
+يُحفظ تلقائياً: `config.json`, `workspaces/`, `plugins/`, `license.json`,
+`audit.jsonl` (سجل التدقيق وقفل التزامن)، `audit-export.json`.
 نسخة التراجع تُطبع في الناتج.
 
 ### التراجع

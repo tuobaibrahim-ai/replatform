@@ -1,7 +1,8 @@
 """ترقية آمنة من حزمة محمولة، مع نسخة تراجع كاملة.
 
 الترقية لا تلمس بيانات المستخدم: `config.json` و`workspaces/` و`plugins/`
-تُنقل إلى النسخة الجديدة قبل التبديل. أي فشل يعيد الحالة السابقة.
+و`license.json` و`audit.jsonl` تُنقل إلى النسخة الجديدة قبل التبديل. أي فشل
+يعيد الحالة السابقة.
 """
 
 from __future__ import annotations
@@ -78,7 +79,15 @@ def install_bundle(
     bundle: str | Path,
     target: str | Path,
     expected_sha256: str = "",
-    preserve: tuple[str, ...] = ("config.json", "workspaces", "plugins", "license.json"),
+    preserve: tuple[str, ...] = (
+        "config.json",
+        "workspaces",
+        "plugins",
+        "license.json",
+        "audit.jsonl",
+        "audit.jsonl.lock",
+        "audit-export.json",
+    ),
     dry_run: bool = False,
 ) -> dict:
     """يثبّت الحزمة في `target` مع الاحتفاظ بالبيانات ونسخة تراجع."""

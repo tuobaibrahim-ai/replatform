@@ -5,7 +5,7 @@
 .DESCRIPTION
     Verifies the SHA-256 checksum (when provided), runs a dry-run by default,
     and only then replaces installation files. User data is preserved:
-    config.json, workspaces/, plugins/, license.json.
+    config.json, workspaces/, plugins/, license.json, audit.jsonl.
 
 .PARAMETER Bundle
     Path to replatform-<version>-portable.zip
@@ -20,7 +20,7 @@
     Installation directory. Defaults to the script's directory.
 
 .EXAMPLE
-    powershell -ExecutionPolicy Bypass -File .\upgrade.ps1 -Bundle .\replatform-1.5.0-portable.zip -Sha256 <hash>
+    powershell -ExecutionPolicy Bypass -File .\upgrade.ps1 -Bundle .\replatform-1.5.1-portable.zip -Sha256 <hash>
 #>
 [CmdletBinding()]
 param(

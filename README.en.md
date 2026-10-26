@@ -115,7 +115,7 @@ See [`SECURITY.md`](SECURITY.md) for the threat model and reporting channel.
 
 | Metric | Value |
 |---|---|
-| `unittest` tests | **610** — no network, no real samples |
+| `unittest` tests | **611** — no network, no real samples |
 | Unit coverage | **94%** (CI gate: 90%) |
 | Type checking | `mypy` — zero errors across 49 files |
 | Static security scan | `flake8-bandit` (`S`) rules inside `ruff` — zero unjustified findings |

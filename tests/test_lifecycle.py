@@ -522,6 +522,8 @@ class UpgradeTests(TempDirTest):
         (target / "workspaces" / "ws1" / "meta.json").write_text("{}", encoding="utf-8")
         (target / "config.json").write_text('{"provider": {}}', encoding="utf-8")
         (target / "repl.py").write_text("print('old')\n", encoding="utf-8")
+        (target / "audit.jsonl").write_text('{"event": "scan"}\n', encoding="utf-8")
+        (target / "audit.jsonl.lock").write_bytes(b"")
         return target
 
     def test_verify_bundle_reports_version(self) -> None:
@@ -536,11 +538,31 @@ class UpgradeTests(TempDirTest):
         self.assertTrue(report["ok"])
         self.assertIn("config.json", report["preserved"])
         self.assertIn("workspaces", report["preserved"])
+        self.assertIn("audit.jsonl", report["preserved"])
         self.assertEqual((target / "repl.py").read_text("utf-8"), "print('new')\n")
         self.assertTrue((target / "config.json").is_file())
         self.assertTrue((target / "workspaces" / "ws1" / "meta.json").is_file())
+        self.assertEqual(
+            (target / "audit.jsonl").read_text("utf-8"), '{"event": "scan"}\n'
+        )
         backup = Path(report["backup"])
         self.assertEqual((backup / "repl.py").read_text("utf-8"), "print('old')\n")
+
+    def test_upgrade_preserves_audit_chain(self) -> None:
+        target = self._install()
+        (target / "audit.jsonl").unlink()
+        enterprise.record("scan", path=target / "audit.jsonl", target="sample.exe")
+        enterprise.record("export", path=target / "audit.jsonl")
+        before = enterprise.verify_chain(target / "audit.jsonl")
+        self.assertTrue(before["ok"])
+
+        report = upgrade.install_bundle(self._bundle(), target)
+        self.assertIn("audit.jsonl", report["preserved"])
+        self.assertIn("audit.jsonl.lock", report["preserved"])
+        after = enterprise.verify_chain(target / "audit.jsonl")
+        self.assertTrue(after["ok"], after["reason"])
+        self.assertEqual(after["entries"], 2)
+        self.assertEqual(after["head"], before["head"])
 
     def test_rollback_restores_previous_install(self) -> None:
         target = self._install()

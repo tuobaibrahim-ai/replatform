@@ -8,7 +8,7 @@
 | فحص أمني ثابت | نفس الأمر أعلاه (قواعد `S` مدمجة) | صفر نتائج غير مبرَّرة |
 | فحص الأنواع | `python -m mypy` | صفر أخطاء (47 ملفاً) |
 | Compile | `python -m compileall -q replatform tests` | نجاح |
-| Unit tests | `python -m unittest discover -s tests` | 610/610 |
+| Unit tests | `python -m unittest discover -s tests` | 611/611 |
 | Coverage | `python -m coverage run -m unittest discover -s tests` | ≥ 90% |
 | Dependency audit | `python -m pip_audit -r requirements.lock` | صفر ثغرات معروفة |
 | Reproducible | `python -m replatform.tools.release --reproducible` | بصمتان متطابقتان |
@@ -27,7 +27,7 @@ CI (`.github/workflows/ci.yml`) يشغّل Lint (مع `S`) وmypy وCompile وUn
 
 | المؤشر | القيمة |
 |---|---|
-| اختبارات `unittest` | **610** |
+| اختبارات `unittest` | **611** |
 | تغطية الوحدات | **94%** (الحد 90%) |
 | اختبارات فاشلة | 0 |
 | `ruff` (بما فيه `S`) | ناجح |
@@ -48,7 +48,7 @@ CI (`.github/workflows/ci.yml`) يشغّل Lint (مع `S`) وmypy وCompile وUn
 | `tests/test_agents.py` | 63 | المزوّدون، إعادة التوجيه، الأدوات، الحلقة، الضغط، التوكنات |
 | `tests/test_coverage_core.py` | 59 | `util`، `registry`، `export`، `__main__`، `pe_analyzer`، `apk_analyzer` |
 | `tests/test_connector_fixtures.py` | 53 | fixtures لكل الموصلات الاثني عشر (تطبيع + 404 + حدود) |
-| `tests/test_lifecycle.py` | 50 | هجرة الإعدادات، doctor، الترخيص (RFC 8032)، التدقيق، الترقية/التراجع |
+| `tests/test_lifecycle.py` | 51 | هجرة الإعدادات، doctor، الترخيص (RFC 8032)، التدقيق، الترقية/التراجع |
 | `tests/test_coverage_tools.py` | 51 | `benchmark`، `apk_tools`، `sandbox`، `bindiff` |
 | `tests/test_coverage_extra.py` | 50 | `patcher`، `tokenizer`، `strings_analyzer`، `yara_engine`، `skills` |
 | `tests/test_connectors.py` | 34 | الكتالوج، HTTPS، المفاتيح، التعطيل الافتراضي |
