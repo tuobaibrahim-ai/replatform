@@ -674,7 +674,7 @@ def _threatfox(connector: Connector, query: str, limit: int) -> dict:
     headers = _auth_headers(connector)
     client = _client(connector)
     if kind == "file":
-        payload = {"query": "search_hash", "hash": query}
+        payload: dict[str, object] = {"query": "search_hash", "hash": query}
     else:
         payload = {"query": "search_ioc", "search_term": query, "exact_match": True}
     data = client.post_json(

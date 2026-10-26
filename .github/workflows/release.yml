@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -14,7 +15,7 @@ concurrency:
 
 jobs:
   release:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v7
 
@@ -22,11 +23,13 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: requirements*.lock
 
-      - name: Install
+      - name: Install (locked)
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]"
+          python -m pip install --require-hashes -r requirements-dev.lock
+          python -m pip install -e . --no-deps
 
       - name: Verify tag matches version
         shell: pwsh
@@ -41,6 +44,9 @@ jobs:
       - name: Lint
         run: python -m ruff check replatform tests repl.py
 
+      - name: Types
+        run: python -m mypy
+
       - name: Compile
         run: python -m compileall -q replatform tests
 
@@ -53,7 +59,17 @@ jobs:
           python -m coverage report
 
       - name: Dependency audit
-        run: python -m pip_audit -r requirements.txt --progress-spinner off
+        run: |
+          python -m pip_audit -r requirements.txt --progress-spinner off
+          python -m pip_audit -r requirements.lock --progress-spinner off
+
+      - name: Secret scan
+        run: python -m replatform.tools.secretscan
+
+      - name: Reproducible build
+        env:
+          SOURCE_DATE_EPOCH: "1767225600"
+        run: python -m replatform.tools.release --reproducible
 
       - name: Self-test
         run: python -m replatform selftest
@@ -62,10 +78,30 @@ jobs:
         run: python -m build
 
       - name: Build portable bundle, SBOM and checksums
+        env:
+          SOURCE_DATE_EPOCH: "1767225600"
         run: python -m replatform.tools.release --dist dist --out dist --portable
 
       - name: Verify checksums
         run: python -m replatform.tools.release --dist dist --verify
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign artifacts (keyless, Sigstore)
+        shell: pwsh
+        run: |
+          $targets = @(
+            (Get-ChildItem dist\*-portable.zip).FullName,
+            (Join-Path (Get-Location) "dist\SHA256SUMS"),
+            (Join-Path (Get-Location) "dist\SBOM.cdx.json")
+          )
+          foreach ($target in $targets) {
+            $bundle = "$target.sigstore.json"
+            cosign sign-blob --yes --bundle $bundle $target
+            if ($LASTEXITCODE -ne 0) { throw "cosign failed for $target" }
+            Write-Host "Signed $target"
+          }
 
       - name: Inspect artifacts
         shell: pwsh
@@ -79,7 +115,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $files = Get-ChildItem dist -File | Select-Object -ExpandProperty FullName
-          gh release create $env:GITHUB_REF_NAME @files `
-            --title "REPLATFORM $env:GITHUB_REF_NAME" `
-            --generate-notes `
-            --verify-tag
+          $arguments = @($env:GITHUB_REF_NAME) + $files + @(
+            "--title", "REPLATFORM $env:GITHUB_REF_NAME",
+            "--generate-notes",
+            "--verify-tag"
+          )
+          if ($env:GITHUB_REF_NAME -match "-") { $arguments += "--prerelease" }
+          gh release create @arguments

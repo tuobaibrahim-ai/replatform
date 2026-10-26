@@ -1,5 +1,44 @@
 # سجل التغييرات
 
+## 1.5.0 — 2026-10-26
+
+### البناء وسلسلة التوريد
+- **بناء حتمي فعلي:** تطبيع نهايات الأسطر داخل ZIP، بيانات `ZipInfo` ثابتة،
+  و`ZIP_STORED` لإزالة تفاوت ضغط zlib بين البيئات. أمر جديد:
+  `python -m replatform.tools.release --reproducible` يثبت تطابق البصمة.
+- **قفل الاعتماديات:** `requirements.lock` و`requirements-dev.lock` مولّدان بـ
+  `uv` مع بصمات `--require-hashes` (universal, Python 3.11).
+- **فحص أنواع:** `mypy` مضاف كبوابة CI؛ أُصلحت 27 مشكلة أنواع حقيقية (خلط
+  `bytes/int` في تحليل توقيع APK، `Path/str` في الويب، أنواع القواميس).
+
+### دورة الحياة
+- **هجرة إعدادات آمنة:** `config_version` صريح، هجرة 1→2، نسخة احتياطية
+  `config.json.v1.<timestamp>.bak`، رفض الإعدادات من إصدار أحدث، وأمر
+  `config migrate [--dry-run]`.
+- **`doctor`:** فحص Python/النظام/الإعدادات/المزوّد/الاعتماديات/الأدوات/الكتابة/
+  القرص/الترخيص، مع `--json` و`--bundle` لحزمة دعم تُقنّع كل الأسرار.
+- **ترقية آمنة:** `upgrade` يتحقق من البصمة وبنية ZIP ويرفض zip-slip، ويحفظ
+  `config.json`/`workspaces`/`plugins`/`license.json`، مع نسخة تراجع وأمر
+  `--rollback`، وسكربتات `upgrade.ps1` و`uninstall.ps1`.
+
+### التجاري والاشتراكات
+- **تراخيص offline موقّعة:** Ed25519 مطبّق وفق RFC 8032 بلا اعتماديات، مع
+  اختبار ضد متجهات RFC. المفتاح الخاص خارج المستودع، والعام مثبّت في الكود.
+- **خطط واستحقاقات:** Community (MIT كاملة) / Professional / Enterprise،
+  فترة سماح 14 يوماً، وأوامر `license status|activate|deactivate|features`.
+- **قدرات مؤسسية:** `audit` (سجل بسلسلة تجزئة + تصدير بإثبات) و`fleet`
+  (تقرير أسطول مساحات العمل) — جديد في 1.5.0 ومُرخَّص تجارياً.
+- **وثائق تجارية:** `COMMERCIAL.md` محدّث، `docs/EULA.md`، `docs/SLA.md`،
+  `docs/RESPONSIBLE_USE.md`، `docs/SALES.md`، `docs/RUNBOOK.md`، `TRADEMARK.md`.
+
+### الجودة
+- **604 اختباراً** (كانت 556) وتغطية **94%** بحد 90%؛ 44 اختباراً جديداً
+  لدورة الحياة (هجرة/تشخيص/ترخيص/تدقيق/ترقية).
+- إصلاح انحدار في `benchmark` كان يحسب النتيجة من آخر حالة بدل عدد الناجح.
+
+### التوثيق
+- تحديث `README*` و`docs/QUALITY.md` و`docs/ROADMAP.md` و`PROJECT_REPORT.md`.
+
 ## 1.4.2 — 2026-10-25
 
 ### الجودة والاختبارات

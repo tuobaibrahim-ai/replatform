@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "replatform"
-version = "1.4.2"
+version = "1.5.0"
 description = "Windows reverse-engineering and malware-analysis platform (PE/APK, YARA, Ghidra, AI agents)"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -54,6 +54,7 @@ Commercial = "https://github.com/tuobaibrahim-ai/replatform/blob/master/COMMERCI
 [project.optional-dependencies]
 dev = [
   "ruff>=0.6",
+  "mypy>=1.11",
   "pytest>=8",
   "coverage>=7.4",
   "build>=1.2",
@@ -99,6 +100,18 @@ ignore = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+# فحص أنواع صارم تدريجياً: يبدأ بفحص الدوال غير المعلّمة أيضاً.
+[tool.mypy]
+python_version = "3.11"
+files = ["replatform"]
+ignore_missing_imports = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unused_configs = true
+show_error_codes = true
 
 # نقاط الدخول (CLI/الواجهة/الاختبار الذاتي) تُختبَر تكاملياً عبر selftest،
 # لذا تُستثنى من قياس تغطية الوحدات ليبقى الحد ذا معنى.

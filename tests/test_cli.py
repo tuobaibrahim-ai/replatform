@@ -54,7 +54,15 @@ EXPECTED_COMMANDS = {
     },
     "selftest": {"-h", "--help", "--full"},
     "ws": {"-h", "--help", "--json", "--pdf", "<action>", "<id>"},
-    "config": {"-h", "--help", "--force", "<action>"},
+    "config": {"-h", "--help", "--force", "--dry-run", "--json", "<action>"},
+    "doctor": {"-h", "--help", "--json", "--only", "--bundle"},
+    "license": {"-h", "--help", "--json", "<action>", "<file>"},
+    "audit": {"-h", "--help", "--event", "--target", "--out", "--json", "<action>"},
+    "fleet": {"-h", "--help", "--out", "--json", "<action>"},
+    "upgrade": {
+        "-h", "--help", "--sha256", "--target", "--dry-run", "--rollback", "--yes",
+        "<bundle>",
+    },
     "plugin": {"-h", "--help", "<action>", "<name>"},
 }
 

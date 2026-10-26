@@ -24,15 +24,20 @@ from .core.config import (
     mask_secret,
     save_config,
 )
+from .core.config import ConfigMigrationError
+from .core.config import migrate_config_file
 from .core.export import html_to_pdf
 from .core.registry import detect_tools
 from .core.workspace import Workspace
 from .reports import export_json, export_pdf, render
-from .tools import apk_tools, benchmark, bindiff, patcher, sandbox
+from .tools import apk_tools, benchmark, bindiff, doctor, enterprise, licensing, patcher, sandbox
+from .tools import upgrade as upgrade_tool
 
 try:
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    for _stream in (sys.stdout, sys.stderr):
+        _reconfigure = getattr(_stream, "reconfigure", None)
+        if callable(_reconfigure):
+            _reconfigure(encoding="utf-8", errors="replace")
 except AttributeError:
     pass
 
@@ -783,9 +788,9 @@ def cmd_ws(args) -> int:
     if args.action == "show":
         meta = ws.safe_meta()
         print(json.dumps(meta, ensure_ascii=False, indent=2))
-        result = ws.load_agent("result")
-        if result:
-            print("\n" + result.get("summary_md", ""))
+        agent_result = ws.load_agent("result")
+        if agent_result:
+            print("\n" + agent_result.get("summary_md", ""))
         return 0
 
     if args.action in ("open", "report", "pdf"):
@@ -822,7 +827,146 @@ def cmd_config(args) -> int:
         safe["provider"]["api_key"] = mask_secret(api_key(cfg))
         print(json.dumps(safe, ensure_ascii=False, indent=2))
         return 0
+    if args.action == "migrate":
+        report = migrate_config_file(dry_run=args.dry_run)
+        if args.json:
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+        else:
+            for note in report["notes"]:
+                print(f"  • {note}")
+            if report["dry_run"]:
+                print(_warn("معاينة فقط — لم يُكتب أي تغيير."))
+            elif report["changed"]:
+                print(_ok(f"✓ هُجر المخطط {report['from']} → {report['to']}"))
+                print(f"  نسخة احتياطية: {report['backup']}")
+            else:
+                print(_ok(f"✓ لا هجرة مطلوبة (المخطط {report['to']})"))
+        return 0
     return 1
+
+
+def cmd_doctor(args) -> int:
+    only = tuple(part.strip() for part in (args.only or "").split(",") if part.strip())
+    report = doctor.run_checks(only)
+    if args.bundle:
+        target = doctor.build_bundle(args.bundle, report)
+        report["bundle"] = str(target)
+    if args.json:
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 0 if report["ok"] else 1
+    print(f"REPLATFORM {report['version']} — تشخيص الجاهزية")
+    marks = {"ok": "✓", "warn": "!", "fail": "✗"}
+    for item in report["checks"]:
+        print(f"  {marks[item['status']]} {item['title']}: {item['detail']}")
+        if item["hint"]:
+            print(f"      → {item['hint']}")
+    counts = report["counts"]
+    summary = f"ناجح {counts['ok']} · تحذير {counts['warn']} · فشل {counts['fail']}"
+    print(_ok(summary) if report["ok"] else _err(summary))
+    if report.get("bundle"):
+        print(f"  حزمة التشخيص: {report['bundle']}")
+    return 0 if report["ok"] else 1
+
+
+def cmd_license(args) -> int:
+    if args.action == "status":
+        state = licensing.status()
+    elif args.action == "activate":
+        if not args.file:
+            raise ValueError("حدّد ملف الترخيص: license activate <ملف>")
+        state = licensing.activate(args.file)
+        print(_ok(f"✓ فُعّل ترخيص {state['license_id']} ({state['tier']})"))
+    elif args.action == "deactivate":
+        removed = licensing.deactivate()
+        print(_ok("✓ حُذف الترخيص المحلي") if removed else _warn("لا ترخيص محلي"))
+        return 0
+    elif args.action == "features":
+        state = licensing.status()
+        for feature in state["features"]:
+            print(f"  • {feature}")
+        return 0 if state["valid"] else 1
+    else:
+        return 1
+    if args.json:
+        print(json.dumps(state, ensure_ascii=False, indent=2))
+        return 0 if state["valid"] else 1
+    print(f"الفئة: {state['tier']}")
+    if state["valid"]:
+        print(f"العميل: {state['customer']} · المقاعد: {state['seats']}")
+        print(f"ينتهي: {state['expires'] or 'بلا نهاية'}"
+              + (f" (متبقٍ {state['days_left']} يوماً)" if state["days_left"] is not None else ""))
+        print(f"الاستحقاقات: {', '.join(state['features'])}")
+        if state["grace"]:
+            print(_warn("! فترة سماح — جدّد الاشتراك"))
+    else:
+        print(_warn(state["reason"]))
+        print("  النواة MIT تعمل كاملة. للترقية: docs/COMMERCIAL.md")
+    return 0 if state["valid"] else 1
+
+
+def cmd_audit(args) -> int:
+    if args.action == "record":
+        if not args.event:
+            raise ValueError("حدّد الحدث: audit record --event <اسم>")
+        entry = enterprise.record(args.event, target=args.target or "")
+        print(_ok(f"✓ سُجّل الحدث ({entry['hash'][:12]}…)"))
+        return 0
+    if args.action == "verify":
+        report = enterprise.verify_chain()
+        print(json.dumps(report, ensure_ascii=False, indent=2) if args.json
+              else (_ok(f"✓ السلسلة سليمة ({report['entries']} حدثاً)") if report["ok"]
+                    else _err(f"✗ كسر عند الحدث {report['broken_at']}: {report['reason']}")))
+        return 0 if report["ok"] else 1
+    if args.action == "export":
+        out = args.out or str(ROOT / "audit-export.json")
+        payload = enterprise.export_audit(out)
+        print(_ok(f"✓ صُدّر سجل التدقيق: {out}"))
+        print(f"  البصمة: {payload['sha256'][:16]}…")
+        return 0
+    return 1
+
+
+def cmd_fleet(args) -> int:
+    payload = enterprise.fleet_report(args.out)
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 0
+    print(f"مساحات العمل: {payload['total']}")
+    for kind, count in sorted(payload["kinds"].items()):
+        print(f"  • {kind}: {count}")
+    if args.out:
+        print(_ok(f"✓ التقرير: {args.out}"))
+    print(f"  البصمة: {payload['sha256'][:16]}…")
+    return 0
+
+
+def cmd_upgrade(args) -> int:
+    if args.rollback:
+        report = upgrade_tool.rollback(args.rollback, args.target or ROOT)
+        print(_ok(f"✓ استُعيدت النسخة السابقة في {report['restored']}"))
+        return 0
+    if not args.bundle:
+        raise ValueError("حدّد حزمة الترقية: upgrade <zip> [--sha256 ...]")
+    if not args.dry_run and not args.yes:
+        raise ValueError(
+            "الترقية تستبدل ملفات التثبيت. أعد الأمر مع --yes بعد قراءة "
+            "--dry-run (بياناتك config/workspaces/license محفوظة)."
+        )
+    report = upgrade_tool.install_bundle(
+        args.bundle,
+        args.target or ROOT,
+        expected_sha256=args.sha256 or "",
+        dry_run=args.dry_run,
+    )
+    if report.get("dry_run"):
+        print(_warn("معاينة ترقية — لم يُكتب أي تغيير."))
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 0
+    print(_ok(f"✓ رُقّي إلى {report['version']} ({report['files']} ملفاً)"))
+    print(f"  محفوظ: {', '.join(report['preserved']) or '(لا شيء)'}")
+    if report.get("backup"):
+        print(f"  تراجع: python repl.py upgrade --rollback \"{report['backup']}\"")
+    return 0
 
 
 PLUGIN_TEMPLATE = '''"""إضافة محلل مخصص — REPLATFORM Plugin API.
@@ -1171,9 +1315,47 @@ def build_parser() -> argparse.ArgumentParser:
     p_ws.set_defaults(func=cmd_ws)
 
     p_cfg = sub.add_parser("config", help="إعدادات المنصة")
-    p_cfg.add_argument("action", choices=("init", "show"))
+    p_cfg.add_argument("action", choices=("init", "show", "migrate"))
     p_cfg.add_argument("--force", action="store_true")
+    p_cfg.add_argument("--dry-run", action="store_true", help="معاينة الهجرة بلا كتابة")
+    p_cfg.add_argument("--json", action="store_true")
     p_cfg.set_defaults(func=cmd_config)
+
+    p_doc = sub.add_parser("doctor", help="تشخيص جاهزية التثبيت وحزمة دعم")
+    p_doc.add_argument("--json", action="store_true")
+    p_doc.add_argument("--only", help="فحوص محددة: python,config,tools")
+    p_doc.add_argument("--bundle", nargs="?", const="doctor-bundle.zip",
+                       help="كتابة حزمة تشخيص (بلا أسرار)")
+    p_doc.set_defaults(func=cmd_doctor)
+
+    p_lic = sub.add_parser("license", help="الترخيص التجاري والاستحقاقات (offline)")
+    p_lic.add_argument("action", choices=("status", "activate", "deactivate", "features"))
+    p_lic.add_argument("file", nargs="?", help="ملف الترخيص عند التفعيل")
+    p_lic.add_argument("--json", action="store_true")
+    p_lic.set_defaults(func=cmd_license)
+
+    p_audit = sub.add_parser("audit", help="سجل تدقيق بسلسلة تجزئة (مؤسسي)")
+    p_audit.add_argument("action", choices=("record", "verify", "export"))
+    p_audit.add_argument("--event", help="اسم الحدث عند التسجيل")
+    p_audit.add_argument("--target", help="الهدف المرتبط بالحدث")
+    p_audit.add_argument("--out", help="ملف التصدير")
+    p_audit.add_argument("--json", action="store_true")
+    p_audit.set_defaults(func=cmd_audit)
+
+    p_fleet = sub.add_parser("fleet", help="تقرير أسطول مساحات العمل (مؤسسي)")
+    p_fleet.add_argument("action", choices=("report",))
+    p_fleet.add_argument("--out", help="ملف التقرير JSON")
+    p_fleet.add_argument("--json", action="store_true")
+    p_fleet.set_defaults(func=cmd_fleet)
+
+    p_up = sub.add_parser("upgrade", help="ترقية آمنة من حزمة محمولة مع تراجع")
+    p_up.add_argument("bundle", nargs="?", help="ملف ZIP المحمول")
+    p_up.add_argument("--sha256", help="البصمة المتوقعة للحزمة")
+    p_up.add_argument("--target", help="مجلد التثبيت (افتراضي: الجذر)")
+    p_up.add_argument("--dry-run", action="store_true")
+    p_up.add_argument("--rollback", help="استعادة نسخة تراجع")
+    p_up.add_argument("--yes", action="store_true", help="تأكيد صريح للترقية")
+    p_up.set_defaults(func=cmd_upgrade)
 
     p_pl = sub.add_parser("plugin", help="إدارة الإضافات")
     p_pl.add_argument("action", choices=("new",))
@@ -1191,6 +1373,14 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     try:
         return args.func(args)
+    except (
+        ConfigMigrationError,
+        licensing.LicenseError,
+        licensing.EntitlementError,
+        upgrade_tool.UpgradeError,
+    ) as exc:
+        print(_err(str(exc)), file=sys.stderr)
+        return 3
     except FileNotFoundError as exc:
         print(_err(str(exc)), file=sys.stderr)
         return 2

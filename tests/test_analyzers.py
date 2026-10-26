@@ -33,7 +33,7 @@ class StringsTests(TempDirTest):
             b"8.8.8.8\n"
             b"Software\\Microsoft\\Windows\\CurrentVersion\\Run\n"
             b"powershell -enc AAAA\n"
-            b"-----BEGIN RSA PRIVATE KEY-----\n"
+            b"-----BEGIN RSA PRIVATE KEY-----\n"  # nosecret: fixture وهمي لاختبار استخراج السلاسل
         )
         path = self.write("s.bin", payload)
         result = strings_analyzer.scan(str(path))

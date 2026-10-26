@@ -11,6 +11,7 @@ import tempfile
 import zipfile
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from ..core import util
 
@@ -155,7 +156,7 @@ def patch(
                 "لم يُكتب أي تغيير."
             )
 
-    result = {
+    result: dict[str, Any] = {
         "file": str(target),
         "size": len(data),
         "sha256_before": sha256_bytes(data),
@@ -171,7 +172,7 @@ def patch(
         result["matches"].append({
             "offset": offset,
             "offset_hex": f"0x{offset:08X}",
-            "context": hexdump(data, max(0, offset - 16)),
+            "context": hexdump(bytes(data), max(0, offset - 16)),
         })
 
     if not positions or not apply:

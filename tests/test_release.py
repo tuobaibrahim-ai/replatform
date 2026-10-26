@@ -5,6 +5,7 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import os
 import tempfile
 import unittest
 import zipfile
@@ -176,6 +177,38 @@ class PortableTests(TempDirTest):
         with zipfile.ZipFile(bundle) as archive:
             for info in archive.infolist():
                 self.assertEqual(info.date_time, (2026, 1, 1, 0, 0, 0))
+                self.assertEqual(info.compress_type, zipfile.ZIP_STORED)
+
+    def test_line_endings_are_normalized_inside_bundle(self) -> None:
+        root = self._fixture_root()
+        # شجرة عمل Windows قد تحمل CRLF، وCI يستلم LF: الناتج يجب أن يتطابق.
+        (root / "README.md").write_bytes(b"# a\r\nline\r\n")
+        (root / "install.ps1").write_bytes(b"Write-Host 'a'\nWrite-Host 'b'\n")
+        with patch.object(release, "ROOT", root):
+            bundle = release.build_portable(self.tmp / "out", "1.2.3")
+        with zipfile.ZipFile(bundle) as archive:
+            readme = archive.read("replatform-1.2.3/README.md")
+            script = archive.read("replatform-1.2.3/install.ps1")
+        self.assertNotIn(b"\r", readme)
+        self.assertEqual(script, b"Write-Host 'a'\r\nWrite-Host 'b'\r\n")
+
+    def test_normalize_bytes_handles_binary_untouched(self) -> None:
+        payload = b"\x00\x01\r\n\x02"
+        self.assertEqual(release._normalize_bytes(payload, "a.exe"), payload)
+
+    def test_check_reproducible_reports_matching_digest(self) -> None:
+        with patch.object(release, "ROOT", self._fixture_root()):
+            report = release.check_reproducible("1.2.3")
+        self.assertTrue(report["ok"])
+        self.assertEqual(report["sha256"], report["second"])
+        self.assertGreater(report["size"], 0)
+
+    def test_sbom_honours_source_date_epoch(self) -> None:
+        dist = self.tmp / "dist"
+        with patch.dict(os.environ, {"SOURCE_DATE_EPOCH": "1700000000"}):
+            path = release.build_sbom(dist, "1.2.3")
+        payload = json.loads(path.read_text("utf-8"))
+        self.assertEqual(payload["metadata"]["timestamp"], "2023-11-14T22:13:20+00:00")
 
     def test_empty_source_raises(self) -> None:
         empty = self.tmp / "empty"

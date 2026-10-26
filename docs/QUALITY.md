@@ -1,4 +1,4 @@
-# الجودة والتحقق — REPLATFORM 1.4.2
+# الجودة والتحقق — REPLATFORM 1.5.0
 
 ## 1. بوابات الجودة
 
@@ -6,27 +6,31 @@
 |---|---|---|
 | Lint | `python -m ruff check replatform tests repl.py` | صفر أخطاء |
 | فحص أمني ثابت | نفس الأمر أعلاه (قواعد `S` مدمجة) | صفر نتائج غير مبرَّرة |
+| فحص الأنواع | `python -m mypy` | صفر أخطاء (47 ملفاً) |
 | Compile | `python -m compileall -q replatform tests` | نجاح |
-| Unit tests | `python -m unittest discover -s tests` | 556/556 |
+| Unit tests | `python -m unittest discover -s tests` | 604/604 |
 | Coverage | `python -m coverage run -m unittest discover -s tests` | ≥ 90% |
-| Dependency audit | `python -m pip_audit -r requirements.txt` | صفر ثغرات معروفة |
+| Dependency audit | `python -m pip_audit -r requirements.lock` | صفر ثغرات معروفة |
+| Reproducible | `python -m replatform.tools.release --reproducible` | بصمتان متطابقتان |
 | Self-test | `python -m replatform selftest` | نجاح |
 | Full self-test | `python -m replatform selftest --full` | 29/29 (يدوي، أدوات خارجية) |
 | Benchmark | `python -m replatform benchmark` | 5/5 |
 | Release | `python -m replatform.tools.release --portable` | SBOM + بصمات + ZIP |
 
-CI (`.github/workflows/ci.yml`) يشغّل Lint (مع `S`) وCompile وUnit وCoverage
-وDependency audit وSelf-test على Windows مع Python 3.12 و3.13، إضافة إلى بناء
-الحزم وتشغيل أدوات الإصدار (dry run) على Python 3.12.
+CI (`.github/workflows/ci.yml`) يشغّل Lint (مع `S`) وmypy وCompile وUnit
+وCoverage وDependency audit وSelf-test على Windows 2022 و2025 مع Python
+3.11–3.14، ويثبت الاعتماديات من `requirements-dev.lock` بالبصمات، ويتحقق من
+البناء الحتمي، ويشغّل فحص الأسرار (`secretscan`) و`pip-audit` على Linux.
 
-## 2. الوضع الفعلي (2026-10-25)
+## 2. الوضع الفعلي (2026-10-26)
 
 | المؤشر | القيمة |
 |---|---|
-| اختبارات `unittest` | **556** |
-| تغطية الوحدات | **95%** (الحد 90%) |
+| اختبارات `unittest` | **604** |
+| تغطية الوحدات | **94%** (الحد 90%) |
 | اختبارات فاشلة | 0 |
 | `ruff` (بما فيه `S`) | ناجح |
+| `mypy` | صفر أخطاء في 47 ملفاً |
 | `pip-audit` | صفر ثغرات معروفة |
 | `selftest --full` | 29/29 |
 | `benchmark` | 5/5 |
@@ -43,10 +47,11 @@ CI (`.github/workflows/ci.yml`) يشغّل Lint (مع `S`) وCompile وUnit وCo
 | `tests/test_agents.py` | 63 | المزوّدون، إعادة التوجيه، الأدوات، الحلقة، الضغط، التوكنات |
 | `tests/test_coverage_core.py` | 59 | `util`، `registry`، `export`، `__main__`، `pe_analyzer`، `apk_analyzer` |
 | `tests/test_connector_fixtures.py` | 53 | fixtures لكل الموصلات الاثني عشر (تطبيع + 404 + حدود) |
+| `tests/test_lifecycle.py` | 44 | هجرة الإعدادات، doctor، الترخيص (RFC 8032)، التدقيق، الترقية/التراجع |
 | `tests/test_coverage_tools.py` | 51 | `benchmark`، `apk_tools`، `sandbox`، `bindiff` |
 | `tests/test_coverage_extra.py` | 50 | `patcher`، `tokenizer`، `strings_analyzer`، `yara_engine`، `skills` |
 | `tests/test_connectors.py` | 34 | الكتالوج، HTTPS، المفاتيح، التعطيل الافتراضي |
-| `tests/test_cli.py` | 25 | لقطة سطح 21 أمراً + التوزيع + المساعدات |
+| `tests/test_cli.py` | 25 | لقطة سطح 26 أمراً + التوزيع + المساعدات |
 | `tests/test_core.py` | 24 | الإعدادات، الحالة، مساحات العمل، المهارات، التقارير |
 | `tests/test_http.py` | 24 | allowlist، HTTPS، الحدود، الأخطاء، إعادة التوجيه |
 | `tests/test_analyzers_extra.py` | 23 | `Target`، التشغيل، الإضافات، YARA، Rizin، Ghidra، السجل |
@@ -62,13 +67,13 @@ CI (`.github/workflows/ci.yml`) يشغّل Lint (مع `S`) وCompile وUnit وCo
 
 ## 4. سياسة التغطية
 
-- الحد **90%** مفروض في `pyproject.toml` ويفشل البناء تحته (الفعلي 95%).
+- الحد **90%** مفروض في `pyproject.toml` ويفشل البناء تحته (الفعلي 94%).
 - تُستثنى ثلاث نقاط دخول: `cli.py`، `tools/selftest.py`، `web/server.py`.
   **السبب:** تُختبَر تكاملياً (لقطة CLI + `selftest` + فحص يدوي للواجهة)،
   وقياسها كوحدات يُخفّض الرقم دون دلالة على جودة المنطق. الاستثناء موثّق في
   `pyproject.toml` ولا يُوسَّع بلا مراجعة.
 - التغطية ليست هدفاً بحد ذاتها: كل إصلاح يضيف اختبار انحدار يفشل قبله.
-- مسار التحسّن: 48% (1.3) → 75% (1.4.0) → 92% (1.4.1) → **95% (1.4.2)**.
+- مسار التحسّن: 48% (1.3) → 75% (1.4.0) → 92% (1.4.1) → 95% (1.4.2) → **94% (1.5.0، وحدات أكثر)**.
 
 ## 5. الفحص الأمني الثابت
 

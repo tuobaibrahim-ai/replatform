@@ -2,7 +2,7 @@
 
 **منصة ويندوز محلية للهندسة العكسية وتحليل البرمجيات — PE · APK · YARA · Ghidra · وكلاء ذكاء اصطناعي مقيدون.**
 
-الإصدار **1.4.2** · رخصة **MIT** · Windows 10/11 · Python 3.11+ · حالة **Beta**
+الإصدار **1.5.0** · رخصة **MIT** · Windows 10/11 · Python 3.11+ · حالة **Beta**
 
 [English overview](README.en.md) · [التوثيق الكامل](PLATFORM.md) · [دليل النشر](docs/DEPLOYMENT.md) · [البنية](docs/ARCHITECTURE.md) · [الجودة](docs/QUALITY.md)
 
@@ -26,11 +26,11 @@
 ### حزمة محمولة (موصى به)
 
 ```powershell
-# 1) نزّل replatform-1.4.2-portable.zip من صفحة الإصدارات وتحقق من البصمة
-Get-FileHash .\replatform-1.4.2-portable.zip -Algorithm SHA256
+# 1) نزّل replatform-1.5.0-portable.zip من صفحة الإصدارات وتحقق من البصمة
+Get-FileHash .\replatform-1.5.0-portable.zip -Algorithm SHA256
 
 # 2) فك الضغط ثم
-cd replatform-1.4.2
+cd replatform-1.5.0
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 
 # 3) تحقق
@@ -60,6 +60,9 @@ python -m replatform diff old.exe new.exe  # مقارنة نسختين
 python -m replatform sandbox sample.exe    # خطة Windows Sandbox (بلا تشغيل)
 python -m replatform serve --open          # واجهة ويب محلية برمز دخول
 python -m replatform selftest --full       # 29 فحصاً للبيئة والأدوات
+python -m replatform doctor                # تشخيص الجاهزية + حزمة دعم بلا أسرار
+python -m replatform config migrate        # هجرة الإعدادات مع نسخة احتياطية
+python -m replatform license status        # الترخيص التجاري (تحقق محلي offline)
 ```
 
 ## القدرات
@@ -96,14 +99,16 @@ python -m replatform selftest --full       # 29 فحصاً للبيئة والأ
 
 | المؤشر | القيمة |
 |---|---|
-| اختبارات `unittest` | **556** — بلا شبكة أو عيّنات حقيقية |
-| تغطية الوحدات | **95%** (حد CI: 90%) |
+| اختبارات `unittest` | **604** — بلا شبكة أو عيّنات حقيقية |
+| تغطية الوحدات | **94%** (حد CI: 90%) |
+| فحص الأنواع | `mypy` — صفر أخطاء في 47 ملفاً |
 | فحص أمني ثابت | قواعد `flake8-bandit` (`S`) داخل `ruff` — صفر نتائج غير مبرَّرة |
 | fuzzing | 8 خصائص × 300 + 120 = 2,520 حالة، بذرة ثابتة |
 | `selftest --full` | 29/29 |
 | `benchmark` | 5/5 |
-| CI | Windows · Python 3.12 و3.13 · lint + compile + tests + coverage + dependency audit + build + release dry-run |
-| الإصدار | SBOM (CycloneDX 1.5) + `SHA256SUMS` + ZIP محمول حتمي |
+| البناء الحتمي | `--reproducible` يثبت تطابق البصمة بايتاً ببايت |
+| CI | Windows 2022/2025 · Python 3.11–3.14 · lint + mypy + tests + coverage + audit + build + release dry-run |
+| الإصدار | SBOM (CycloneDX 1.5) + `SHA256SUMS` + ZIP محمول حتمي + توقيع Sigstore |
 
 ```powershell
 python -m ruff check replatform tests repl.py
@@ -134,7 +139,7 @@ python -m replatform selftest --full
 
 ## القيود المعروفة
 
-- **Windows فقط** في 1.4.2 (Sandbox وأدوات APK/PE مرتبطة بالمنصة).
+- **Windows فقط** في 1.5.0 (Sandbox وأدوات APK/PE مرتبطة بالمنصة).
 - **الأدوات الخارجية غير مضمَّنة**: Ghidra/JDK/apktool/jadx/YARA/Rizin تُثبَّت
   منفصلة؛ بدونها تظهر المحللات المرتبطة `skipped`.
 - **الموصلات المجانية الثلاثة** (NVD/OSV/CISA KEV) جُرِّبت حياً بنجاح (TLSv1.3)؛

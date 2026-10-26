@@ -157,11 +157,11 @@ def run_benchmark() -> dict:
             })
     finally:
         shutil.rmtree(temp, ignore_errors=True)
-    passed = sum(1 for result in results if result["ok"])
+    passed_count = sum(1 for result in results if result["ok"])
     return {
-        "passed": passed,
+        "passed": passed_count,
         "total": len(results),
-        "score": round(100 * passed / len(results), 1) if results else 0.0,
+        "score": round(100 * passed_count / len(results), 1) if results else 0.0,
         "seconds": round(time.monotonic() - started, 2),
         "tokenizer": tokenizer.engine_name(),
         "cases": results,

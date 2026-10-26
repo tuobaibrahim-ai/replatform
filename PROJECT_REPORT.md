@@ -1,7 +1,7 @@
 # تقرير حالة مشروع REPLATFORM
 
-**الإصدار:** 1.4.2 · **تاريخ التقرير:** 2026-10-25 · **الترخيص:** MIT
-**المستودع:** `https://github.com/tuobaibrahim-ai/replatform` (خاص) · **الفرع:** `master` · **الوسم:** `v1.4.2`
+**الإصدار:** 1.5.0 · **تاريخ التقرير:** 2026-10-26 · **الترخيص:** MIT (نواة) + اشتراك (قدرات مؤسسية)
+**المستودع:** `https://github.com/tuobaibrahim-ai/replatform` (خاص) · **الفرع:** `master` · **الوسم:** `v1.5.0`
 
 ---
 
@@ -14,18 +14,28 @@ REPLATFORM منصة ويندوز محلية للهندسة العكسية وتح
 
 | المؤشر | القيمة |
 |---|---|
-| كود الإنتاج | 42 ملف Python · 8,768 سطراً |
-| الاختبارات | 556 اختبار `unittest` |
-| تغطية الوحدات | 95% (حد CI: 90%) |
+| كود الإنتاج | 48 ملف Python · 10,233 سطراً |
+| الاختبارات | 604 اختبار `unittest` (6,509 سطراً) |
+| تغطية الوحدات | 94% (حد CI: 90%) |
+| فحص الأنواع | `mypy` — 0 أخطاء |
 | الاختبار الذاتي | 29/29 ناجح (`selftest --full`) |
 | تقييم الوكيل | 5/5 (100%) في 1.2ث |
-| أوامر CLI | 21 أمراً |
+| أوامر CLI | 26 أمراً |
 | المحللات | 6 |
 | موصلات التكامل | 12 (قراءة فقط) |
 | قواعد YARA | 19 قاعدة |
 | مهارات الوكلاء | 9 |
-| CI | Windows (Python 3.12 و3.13) — lint/compile/tests/coverage/audit/build |
-| حالة Git | شجرة عمل 1.4.2 · الوسم `v1.4.2` |
+| CI | Windows 2022/2025 × Python 3.11–3.14 — lint/mypy/tests/coverage/audit/reproducible |
+| حالة Git | شجرة عمل 1.5.0 · الوسم `v1.5.0` |
+
+### 1.1 ما الجديد في 1.5.0
+
+- **بناء حتمي مُثبت:** `release --reproducible` ينتج بصمة متطابقة بايتاً ببايت.
+- **قفل اعتماديات** بالبصمات + بوابة `mypy` + فحص أسرار محلي.
+- **دورة حياة آمنة:** هجرة إعدادات بنسخة احتياطية، `doctor`، ترقية مع تراجع.
+- **اشتراكات تجارية:** تراخيص Ed25519 تعمل بلا اتصال، وفترة سماح 14 يوماً.
+- **قدرات مؤسسية:** `audit` (سجل بسلسلة تجزئة) و`fleet` (تقرير أسطول).
+- **وثائق بيع وتشغيل:** EULA، SLA، SALES، RUNBOOK، RESPONSIBLE_USE، TRADEMARK.
 
 ---
 
@@ -40,11 +50,12 @@ Ghidra، YARA، Rizin، محرر سداسي) وسكربتات يدوية، مع 
 
 ## 3. القدرات الوظيفية
 
-### 3.1 أوامر CLI (21)
+### 3.1 أوامر CLI (26)
 
 `tools` · `version` · `integrations` · `skills` · `inventory` · `analyze` · `agent` ·
 `use` · `current` · `patch` · `apk` · `serve` · `diff` · `ghidra` · `sandbox` ·
-`benchmark` · `scan` · `selftest` · `ws` · `config` · `plugin`
+`benchmark` · `scan` · `selftest` · `ws` · `config` · `plugin` ·
+`doctor` · `license` · `audit` · `fleet` · `upgrade`
 
 ### 3.2 المحللات
 
@@ -168,15 +179,18 @@ Windows Sandbox: الميزة `Containers-DisposableClientVM = Enabled`،
 | البوابة | النتيجة |
 |---|---|
 | `ruff check replatform tests repl.py` | ناجح |
+| `mypy` | 0 أخطاء (48 ملفاً) |
 | `compileall` | ناجح |
-| `unittest` (556) | 556/556 OK |
-| `coverage` (وحدات المنطق) | 95% — الحد الأدنى 90% |
+| `unittest` (604) | 604/604 OK |
+| `coverage` (وحدات المنطق) | 94% — الحد الأدنى 90% |
 | `ruff` مع قواعد `S` | صفر نتائج غير مبرَّرة (فحص أمني ثابت) |
-| `pip-audit -r requirements.txt` | صفر ثغرات معروفة |
+| `secretscan` | صفر أسرار في 118 ملفاً |
+| `pip-audit -r requirements.txt` و`requirements.lock` | صفر ثغرات معروفة |
+| `release --reproducible` | بصمتان متطابقتان |
 | `selftest --full` | 29/29 (يشمل APK وRizin وGhidra وSandbox) |
 | `benchmark` | 5/5 (path_guard, compaction, timeout, usage/tokens, tool_budget) |
 | أدوات الإصدار | SBOM + بصمات + ZIP محمول؛ `--verify` يعيد `ok: true` |
-| GitHub Actions | lint + compile + unit + coverage + dependency audit + build + release dry-run (3.12 و3.13) |
+| GitHub Actions | Windows 2022/2025 × Python 3.11–3.14 + فحص سلسلة توريد على Linux |
 
 ---
 
@@ -198,14 +212,15 @@ Windows Sandbox: الميزة `Containers-DisposableClientVM = Enabled`،
 **P2 — تحسينات:**
 
 3. قواعد YARA 19 قاعدة محلية؛ لا حزم قواعد مجتمعية (Sigma/خ) بعد.
-4. التغطية 95% (كانت 92%)؛ الهدف التالي 97% مع التركيز على `reports`
-   و`catalog` و`disasm_analyzer`، ثم `cli.py` بعد تفكيكه.
+4. التغطية 94% (كانت 95% عند وحدات أقل)؛ الهدف التالي 96% مع التركيز على
+   `reports` و`catalog` و`disasm_analyzer`، ثم `cli.py` بعد تفكيكه.
 5. CI يشغّل `selftest` السريع فقط؛ `--full` يحتاج أدوات خارجية غير متاحة على runners.
 6. التوثيق عربي أساساً مع دليل إنجليزي (`README.en.md`) ووثائق هندسية في `docs/`.
-7. لا توقيع كود؛ التوزيع ZIP + بصمات بدل installer موقّع (قرار متحفظ بلا شهادة).
+7. لا توقيع كود؛ التوزيع ZIP + بصمات + توقيع Sigstore keyless بدل installer موقّع.
 8. الاعتماد على ثنائيات خارجية (Ghidra/JDK/jadx) غير مثبّتة عبر pip.
-9. `cli.py` كبير (1074 سطراً) — مرشح للتفكيك بعد تثبيت لقطة سطح الأوامر.
-10. **Windows فقط** في 1.4.2؛ لا دعم Linux للتحليل الثابت بعد.
+9. `cli.py` كبير (~1,500 سطراً) — مرشح للتفكيك بعد تثبيت لقطة سطح الأوامر.
+10. **Windows فقط** في 1.5.0؛ لا دعم Linux للتحليل الثابت بعد.
+11. الترخيص التجاري تحقق محلي بلا إبطال فوري؛ لا يوجد خادم ترخيص (قرار متعمّد).
 
 ---
 
@@ -224,6 +239,9 @@ Windows Sandbox: الميزة `Containers-DisposableClientVM = Enabled`،
 
 ## 11. سجل الإصدارات المختصر
 
+- **1.5.0 (2026-10-26):** الثقة والاشتراكات — بناء حتمي، قفل اعتماديات، mypy،
+  هجرة إعدادات، `doctor`، ترقية مع تراجع، تراخيص Ed25519 offline، `audit`/`fleet`،
+  وثائق EULA/SLA/SALES/RUNBOOK، 604 اختباراً وتغطية 94%.
 - **1.4.2 (2026-10-25):** إغلاق فجوات الثقة — 556 اختباراً وتغطية 95% (حد 90%)،
   fixtures لكل الموصلات الاثني عشر، فحص أمني ثابت بقواعد `S` داخل `ruff`،
   تحصين بيان APK ضد `DOCTYPE`/`ENTITY`، وبوابة اتساق الإصدار والحوكمة.

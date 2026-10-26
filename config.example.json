@@ -1,4 +1,5 @@
 {
+  "config_version": 2,
   "provider": {
     "type": "openai-compatible",
     "base_url": "https://api.openai.com/v1",

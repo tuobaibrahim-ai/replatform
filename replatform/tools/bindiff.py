@@ -282,7 +282,7 @@ def _diff_pe(a: dict, b: dict, highlights: list[str]) -> dict:
             "size_b": (sec_b or {}).get("vsize"),
         })
         if status == "added":
-            highlights.append(f"قسم جديد: {name} (إنتروبيا {sec_b['entropy']})")
+            highlights.append(f"قسم جديد: {name} (إنتروبيا {(sec_b or {}).get('entropy')})")
         elif status == "removed":
             highlights.append(f"قسم محذوف: {name}")
 

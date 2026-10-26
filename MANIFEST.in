@@ -9,12 +9,17 @@ include CONTRIBUTING.md
 include CODE_OF_CONDUCT.md
 include SUPPORT.md
 include COMMERCIAL.md
+include TRADEMARK.md
 include THIRD_PARTY_NOTICES.md
 include CITATION.cff
 include config.example.json
 include requirements.txt
+include requirements.lock
+include requirements-dev.lock
 include repl.py
 include install.ps1
+include upgrade.ps1
+include uninstall.ps1
 include replatform.cmd
 include .editorconfig
 include .gitattributes

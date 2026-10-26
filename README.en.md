@@ -4,7 +4,7 @@
 > scanning, Ghidra/Rizin disassembly, binary diffing, batch triage, constrained
 > AI agents, and a token-protected local web dashboard.
 
-**Version 1.4.2 · MIT License · Windows 10/11 · Python 3.11+ · Beta**
+**Version 1.5.0 · MIT License · Windows 10/11 · Python 3.11+ · Beta**
 
 [Arabic README](README.md) · [Full reference](PLATFORM.md) · [Deployment](docs/DEPLOYMENT.md) · [Architecture](docs/ARCHITECTURE.md) · [Quality](docs/QUALITY.md)
 
@@ -35,9 +35,9 @@ and confirmed rather than implicit.
 ### Portable bundle (recommended)
 
 ```powershell
-Get-FileHash .\replatform-1.4.2-portable.zip -Algorithm SHA256
+Get-FileHash .\replatform-1.5.0-portable.zip -Algorithm SHA256
 # compare with SHA256SUMS from the release page
-cd replatform-1.4.2
+cd replatform-1.5.0
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 .\replatform.cmd version
 ```
@@ -115,7 +115,7 @@ See [`SECURITY.md`](SECURITY.md) for the threat model and reporting channel.
 
 | Metric | Value |
 |---|---|
-| `unittest` tests | **556** — no network, no real samples |
+| `unittest` tests | **604** — no network, no real samples |
 | Unit coverage | **95%** (CI gate: 90%) |
 | Static security scan | `flake8-bandit` (`S`) rules inside `ruff` — zero unjustified findings |
 | Fuzzing | 8 properties × 300 + 120 = 2,520 cases, fixed seed |
@@ -158,7 +158,7 @@ python -m replatform selftest --full
 
 ## Known limitations
 
-- **Windows only** in 1.4.2.
+- **Windows only** in 1.5.0.
 - **External tools are not bundled** (Ghidra/JDK/apktool/jadx/YARA/Rizin);
   related analyzers report `skipped` when missing.
 - **The three keyless connectors** (NVD/OSV/CISA KEV) passed live checks

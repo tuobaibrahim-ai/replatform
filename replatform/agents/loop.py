@@ -208,7 +208,7 @@ def run_agent(
                 pass
 
         calls = message.get("tool_calls") or []
-        entry = {"role": "assistant", "content": _text(message.get("content"))}
+        entry: dict = {"role": "assistant", "content": _text(message.get("content"))}
         if calls:
             entry["tool_calls"] = calls
         messages.append(entry)

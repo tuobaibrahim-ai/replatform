@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from pathlib import Path
 
 from ..analyzers import apk_analyzer, pe_analyzer, strings_analyzer
@@ -298,7 +299,7 @@ def intel_lookup(connector: str, query: str) -> dict:
     )
 
 
-_EXECUTORS = {
+_EXECUTORS: dict[str, Callable[..., dict]] = {
     "analyze_file": analyze_file,
     "strings_search": strings_search,
     "hexdump": hexdump,

@@ -7,9 +7,9 @@ import math
 from functools import lru_cache
 
 try:  # اختياري بالكامل؛ لا نكسر التشغيل إن لم يكن مثبتاً.
-    import tiktoken  # type: ignore
+    import tiktoken
 except Exception:  # noqa: BLE001
-    tiktoken = None
+    tiktoken = None  # type: ignore[assignment]
 
 
 @lru_cache(maxsize=8)

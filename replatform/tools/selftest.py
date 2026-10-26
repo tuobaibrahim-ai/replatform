@@ -554,8 +554,8 @@ def _check_integrations() -> str:
         def __enter__(self):
             return self
 
-        def __exit__(self, *args) -> bool:
-            return False
+        def __exit__(self, *args) -> None:
+            return None
 
     class _FakeOpener:
         def __init__(self, response: _FakeResponse) -> None:
@@ -565,7 +565,7 @@ def _check_integrations() -> str:
             return self.response
 
     capped = SafeHTTPClient({"example.com"}, max_bytes=1024)
-    capped._opener = _FakeOpener(_FakeResponse(b"{" + b"x" * 4096 + b"}"))
+    capped._opener = _FakeOpener(_FakeResponse(b"{" + b"x" * 4096 + b"}"))  # type: ignore[assignment]
     try:
         capped.get_json("https://example.com/v1")
     except IntegrationError as exc:
@@ -574,7 +574,7 @@ def _check_integrations() -> str:
         raise AssertionError("قبل عميل التكامل استجابة تتجاوز السقف")
 
     declared = SafeHTTPClient({"example.com"}, max_bytes=1024)
-    declared._opener = _FakeOpener(_FakeResponse(b"{}", declared=4096))
+    declared._opener = _FakeOpener(_FakeResponse(b"{}", declared=4096))  # type: ignore[assignment]
     try:
         declared.get_json("https://example.com/v1")
     except IntegrationError as exc:
@@ -740,7 +740,7 @@ def _check_agent_loop(temp: Path) -> str:
     sample = temp / "agent-sample.bin"
     sample.write_bytes(b"MZ" + b"\x00" * 32 + b"http://example.com/agent-test")
     agent_tools.configure([sample])
-    script = [
+    script: list[dict] = [
         {
             "role": "assistant",
             "content": None,
@@ -811,7 +811,7 @@ def _check_agent_limits(temp: Path) -> str:
     after = compact_messages(messages, 2500)
     assert after <= 2500, f"لم يُضغط السياق: {after}"
 
-    single = [
+    single: list[dict] = [
         {"role": "system", "content": "س" * 100},
         {"role": "user", "content": "م" * 100},
         {

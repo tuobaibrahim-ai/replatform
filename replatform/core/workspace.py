@@ -47,7 +47,7 @@ class Workspace:
         ws = cls(path)
         ws.artifacts_dir.mkdir(exist_ok=True)
         ws.agent_dir.mkdir(exist_ok=True)
-        meta = {
+        meta: dict = {
             "id": ws.id,
             "name": name or Path(target).name,
             "target": {
@@ -122,7 +122,7 @@ class Workspace:
         self._write_json(self.path / "meta.json", meta)
 
     def add_event(self, kind: str, message: str, data: dict | None = None) -> None:
-        event = {
+        event: dict = {
             "ts": datetime.now().isoformat(timespec="seconds"),
             "kind": kind,
             "message": message,

@@ -7,43 +7,97 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
-    runs-on: windows-latest
+    name: py${{ matrix.python-version }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13"]
+        os: ["windows-2022", "windows-2025"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v7
+
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - name: Install
+          cache-dependency-path: requirements*.lock
+
+      - name: Install (locked)
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]"
+          python -m pip install --require-hashes -r requirements-dev.lock
+          python -m pip install -e . --no-deps
+
       - name: Lint
         run: python -m ruff check replatform tests repl.py
+
+      - name: Types
+        run: python -m mypy
+
       - name: Compile
         run: python -m compileall -q replatform tests
+
       - name: Unit tests
         run: python -m unittest discover -s tests -v
+
       - name: Coverage
+        if: matrix.python-version == '3.12' && matrix.os == 'windows-2022'
         run: |
           python -m coverage run -m unittest discover -s tests
           python -m coverage report
+
       - name: Dependency audit
-        if: matrix.python-version == '3.12'
-        run: python -m pip_audit -r requirements.txt --progress-spinner off
-      - name: Build package
-        if: matrix.python-version == '3.12'
-        run: python -m build
-      - name: Release tooling (dry run)
-        if: matrix.python-version == '3.12'
+        if: matrix.python-version == '3.12' && matrix.os == 'windows-2022'
         run: |
-          python -m replatform.tools.release --dist dist --out dist --portable
-          python -m replatform.tools.release --dist dist --verify
-      - name: Self-test
-        run: python repl.py selftest
+          python -m pip_audit -r requirements.txt --progress-spinner off
+          python -m pip_audit -r requirements.lock --progress-spinner off
+
+      - name: Reproducible build
+        if: matrix.python-version == '3.12' && matrix.os == 'windows-2022'
+        env:
+          SOURCE_DATE_EPOCH: "1767225600"
+        run: python -m replatform.tools.release --reproducible
+
+      - name: Package build
+        if: matrix.python-version == '3.12' && matrix.os == 'windows-2022'
+        run: |
+          python -m build
+          python -m pip install --force-reinstall --no-deps dist/*.whl
+          python -c "import replatform; print(replatform.__version__)"
+
+      - name: Release dry run
+        if: matrix.python-version == '3.12' && matrix.os == 'windows-2022'
+        run: python -m replatform.tools.release --dist dist --out dist --portable
+
+  security:
+    name: supply chain
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install audit tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --require-hashes -r requirements-dev.lock
+
+      - name: Dependency audit
+        run: |
+          python -m pip_audit -r requirements.txt --progress-spinner off
+          python -m pip_audit -r requirements.lock --progress-spinner off
+
+      - name: Secret scan
+        run: python -m replatform.tools.secretscan --json
+
+      - name: Tests (Linux regression)
+        run: python -m unittest discover -s tests

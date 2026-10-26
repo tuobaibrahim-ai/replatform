@@ -529,19 +529,19 @@ class Handler(BaseHTTPRequestHandler):
         raw_target = (form.get("path") or [""])[0]
         remote = not _is_loopback(str(self.client_address[0]))
         try:
-            target = resolve_analyze_target(raw_target, remote=remote)
+            analysis_target: Path = resolve_analyze_target(raw_target, remote=remote)
         except ValueError as exc:
             return self._redirect("/?" + urlencode({"error": str(exc)}))
         try:
             with _analysis_slot():
                 before = {w.id for w in Workspace.list_all()}
                 proc = subprocess.run(
-                    [sys.executable, str(ROOT / "repl.py"), "analyze", str(target)],
+                    [sys.executable, str(ROOT / "repl.py"), "analyze", str(analysis_target)],
                     capture_output=True, text=True, timeout=900,
                     encoding="utf-8", errors="replace",
                 )
                 new = [w for w in Workspace.list_all() if w.id not in before]
-                workspace = _workspace_for(new, target)
+                workspace = _workspace_for(new, analysis_target)
         except AnalysisBusy as exc:
             return self._redirect("/?" + urlencode({"error": str(exc)}))
         except subprocess.TimeoutExpired:
@@ -585,6 +585,8 @@ def serve(
 ) -> None:
     httpd = make_server(host, port, token, allowed_hosts)
     bound_host, bound_port = httpd.server_address[:2]
+    if isinstance(bound_host, bytes):
+        bound_host = bound_host.decode("ascii", "replace")
     display_host = "127.0.0.1" if bound_host in ("0.0.0.0", "::") else bound_host  # noqa: S104 — مقارنة لا ربط
     url = f"http://{display_host}:{bound_port}/"
     print(f"واجهة REPLATFORM جاهزة: {url}")

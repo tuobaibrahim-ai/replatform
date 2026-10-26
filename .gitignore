@@ -12,6 +12,12 @@ bin/
 
 # الإعدادات الحساسة (لا تُرفع أبداً)
 config.json
+config.json.*.bak
+license.json
+audit.jsonl
+audit-export.json
+*.key
+.secrets/
 
 # أدوات خارجية كبيرة
 tools/*.jar

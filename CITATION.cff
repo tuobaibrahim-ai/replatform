@@ -8,8 +8,8 @@ abstract: >-
   Untrusted samples are never executed on the host by default; dynamic analysis
   is restricted to Windows Sandbox with explicit confirmation.
 type: software
-version: 1.4.2
-date-released: 2026-10-25
+version: 1.5.0
+date-released: 2026-10-26
 license: MIT
 repository-code: "https://github.com/tuobaibrahim-ai/replatform"
 url: "https://github.com/tuobaibrahim-ai/replatform"

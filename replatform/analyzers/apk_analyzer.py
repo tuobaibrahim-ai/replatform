@@ -416,9 +416,9 @@ def _apk_sig_block(apk_path: str) -> bytes | None:
         if cd_offset != 0xFFFFFFFF and 32 <= cd_offset <= size:
             with open(path, "rb") as handle:
                 handle.seek(cd_offset - 24)
-                footer = handle.read(24)
-            if len(footer) == 24 and footer[8:] == magic:
-                block_size = int.from_bytes(footer[:8], "little")
+                footer_bytes = handle.read(24)
+            if len(footer_bytes) == 24 and footer_bytes[8:] == magic:
+                block_size = int.from_bytes(footer_bytes[:8], "little")
                 total = block_size + 8
                 start = cd_offset - total
                 if 24 <= total <= cd_offset and start >= 0:
@@ -436,14 +436,14 @@ def _apk_sig_block(apk_path: str) -> bytes | None:
     if size > 64 * 1024 * 1024:
         return None
     raw = path.read_bytes()
-    footer = raw.rfind(magic)
-    if footer == -1:
+    footer_index = raw.rfind(magic)
+    if footer_index == -1:
         return None
-    trailing = int.from_bytes(raw[footer - 8:footer], "little")
-    start = footer - trailing + 8
+    trailing = int.from_bytes(raw[footer_index - 8:footer_index], "little")
+    start = footer_index - trailing + 8
     if start < 8:
         return None
-    block = raw[start:footer + 16]
+    block = raw[start:footer_index + 16]
     if (
         len(block) > 24
         and int.from_bytes(block[:8], "little") == trailing

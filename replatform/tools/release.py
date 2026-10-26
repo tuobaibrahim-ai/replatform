@@ -8,6 +8,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import tempfile
 import uuid
 import zipfile
 from datetime import datetime, timezone
@@ -42,8 +44,8 @@ def _dependency_component(name: str) -> dict:
         dist = metadata.distribution(name)
         version = dist.version
         license_text = (
-            (dist.metadata.get("License-Expression") or "")
-            or (dist.metadata.get("License") or "")
+            (dist.metadata.get("License-Expression") or "")  # type: ignore[attr-defined]
+            or (dist.metadata.get("License") or "")  # type: ignore[attr-defined]
             or ""
         ).strip()
     except metadata.PackageNotFoundError:
@@ -58,6 +60,14 @@ def _dependency_component(name: str) -> dict:
         "purl": f"pkg:pypi/{name}@{version}",
         "licenses": [{"license": {"id": license_text}}],
     }
+
+
+def _build_timestamp() -> datetime:
+    """طابع زمني حتمي عند ضبط SOURCE_DATE_EPOCH (ممارسة reproducible-builds)."""
+    epoch = os.environ.get("SOURCE_DATE_EPOCH", "").strip()
+    if epoch.isdigit():
+        return datetime.fromtimestamp(int(epoch), timezone.utc).replace(microsecond=0)
+    return datetime.now(timezone.utc).replace(microsecond=0)
 
 
 def build_sbom(dist_dir: str | Path, version: str | None = None) -> Path:
@@ -81,7 +91,7 @@ def build_sbom(dist_dir: str | Path, version: str | None = None) -> Path:
         "serialNumber": f"urn:uuid:{uuid.uuid5(uuid.NAMESPACE_URL, f'replatform-{release}')}",
         "version": 1,
         "metadata": {
-            "timestamp": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+            "timestamp": _build_timestamp().isoformat(),
             "component": {
                 "type": "application",
                 "name": "replatform",
@@ -138,6 +148,8 @@ _PORTABLE_FILES = (
     "repl.py",
     "replatform.cmd",
     "install.ps1",
+    "upgrade.ps1",
+    "uninstall.ps1",
     "README.md",
     "README.en.md",
     "LICENSE",
@@ -147,16 +159,37 @@ _PORTABLE_FILES = (
     "SECURITY.md",
     "SUPPORT.md",
     "COMMERCIAL.md",
+    "TRADEMARK.md",
     "CONTRIBUTING.md",
     "CODE_OF_CONDUCT.md",
     "THIRD_PARTY_NOTICES.md",
     "CITATION.cff",
     "config.example.json",
     "requirements.txt",
+    "requirements.lock",
+    "requirements-dev.lock",
     "pyproject.toml",
     "MANIFEST.in",
 )
 _PORTABLE_DIRS = ("replatform", "rules", "skills", "docs", "scripts", "tests")
+
+# تطبيع نهايات الأسطر داخل الحزمة: المستودع LF، وPowerShell/CMD يتطلبان CRLF.
+_LF_SUFFIXES = {
+    ".py", ".md", ".txt", ".json", ".toml", ".cff", ".yar",
+    ".yml", ".yaml", ".in", ".example", ".cfg", ".ini",
+}
+_CRLF_SUFFIXES = {".ps1", ".psm1", ".cmd", ".bat"}
+_LF_NAMES = {"LICENSE", "NOTICE"}
+
+
+def _normalize_bytes(data: bytes, name: str) -> bytes:
+    """يوحّد نهايات الأسطر كي يكون الناتج متطابقاً بين Windows وLinux/CI."""
+    suffix = Path(name).suffix.lower()
+    if suffix in _LF_SUFFIXES or name in _LF_NAMES:
+        return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    if suffix in _CRLF_SUFFIXES:
+        return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n").replace(b"\n", b"\r\n")
+    return data
 
 
 def _iter_portable_files() -> list[Path]:
@@ -199,8 +232,20 @@ License: MIT (see LICENSE). Commercial support: see COMMERCIAL.md.
 """
 
 
+def _zip_info(name: str) -> zipfile.ZipInfo:
+    """بيانات ZIP ثابتة (تاريخ، صلاحيات، نظام) لضمان تطابق بايتي."""
+    info = zipfile.ZipInfo(name)
+    info.date_time = (2026, 1, 1, 0, 0, 0)
+    # STORED بدل DEFLATED: ناتج zlib يختلف بين إصدارات Python/المكتبات،
+    # وعدم الضغط يجعل البناء متطابقاً بايتاً ببايت عبر البيئات (بحجم صغير مقبول).
+    info.compress_type = zipfile.ZIP_STORED
+    info.create_system = 3  # Unix ثابت
+    info.external_attr = 0o100644 << 16
+    return info
+
+
 def build_portable(out_dir: str | Path, version: str | None = None) -> Path:
-    """ينشئ حزمة ZIP محمولة قابلة للتوزيع (بلا أدوات خارجية أو عيّنات)."""
+    """ينشئ حزمة ZIP محمولة **حتمية** (بلا أدوات خارجية أو عيّنات)."""
     directory = Path(out_dir)
     directory.mkdir(parents=True, exist_ok=True)
     release = version or __version__
@@ -208,17 +253,42 @@ def build_portable(out_dir: str | Path, version: str | None = None) -> Path:
     files = _iter_portable_files()
     if not files:
         raise FileNotFoundError("لا ملفات مصدر لتجميع الحزمة المحمولة")
-    with zipfile.ZipFile(target, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-        for path in files:
-            relative = path.relative_to(ROOT).as_posix()
-            info = zipfile.ZipInfo(f"replatform-{release}/{relative}")
-            info.date_time = (2026, 1, 1, 0, 0, 0)
-            info.compress_type = zipfile.ZIP_DEFLATED
-            archive.writestr(info, path.read_bytes())
-        info = zipfile.ZipInfo(f"replatform-{release}/PORTABLE-README.txt")
-        info.date_time = (2026, 1, 1, 0, 0, 0)
-        archive.writestr(info, _portable_readme(release))
+    entries: list[tuple[str, bytes]] = []
+    for path in files:
+        relative = path.relative_to(ROOT).as_posix()
+        entries.append(
+            (
+                f"replatform-{release}/{relative}",
+                _normalize_bytes(path.read_bytes(), relative),
+            )
+        )
+    entries.append(
+        (
+            f"replatform-{release}/PORTABLE-README.txt",
+            _portable_readme(release).replace("\r\n", "\n").encode("utf-8"),
+        )
+    )
+    with zipfile.ZipFile(target, "w") as archive:
+        for name, data in entries:
+            archive.writestr(_zip_info(name), data)
     return target
+
+
+def check_reproducible(version: str | None = None) -> dict:
+    """يبني الحزمة مرتين ويقارن البصمة — إثبات عملي للبناء الحتمي."""
+    release = version or __version__
+    with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
+        one = build_portable(first, release)
+        two = build_portable(second, release)
+        digest_one = sha256_file(one)
+        digest_two = sha256_file(two)
+        size = one.stat().st_size
+    return {
+        "ok": digest_one == digest_two,
+        "sha256": digest_one,
+        "second": digest_two,
+        "size": size,
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -230,9 +300,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", default=str(ROOT / "dist"), help="مجلد الإخراج")
     parser.add_argument("--version", default=__version__)
     parser.add_argument("--portable", action="store_true", help="ابنِ حزمة ZIP محمولة")
+    parser.add_argument(
+        "--reproducible",
+        action="store_true",
+        help="ابنِ الحزمة مرتين وتحقّق من تطابق البصمة",
+    )
     parser.add_argument("--verify", action="store_true", help="تحقق من البصمات")
     args = parser.parse_args(argv)
 
+    if args.reproducible:
+        report = check_reproducible(args.version)
+        print(json.dumps(report, ensure_ascii=False))
+        return 0 if report["ok"] else 1
     if args.portable:
         path = build_portable(args.out, args.version)
         print(f"portable: {path}")

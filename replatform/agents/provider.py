@@ -192,7 +192,7 @@ def build_provider(cfg: dict, mock_path: str | None = None) -> "OpenAIProvider |
             or provider.get("mock_path")
             or os.environ.get("RE_MOCK_PATH", "")
         )
-        script = [
+        script: list[dict] = [
             {
                 "role": "assistant",
                 "content": None,
