@@ -7,6 +7,7 @@ import json
 import os
 import sys
 import tempfile
+import threading
 import unittest
 import zipfile
 from datetime import date, timedelta
@@ -264,6 +265,22 @@ class EnterpriseTests(TempDirTest):
         self.assertFalse(report["ok"])
         self.assertEqual(report["broken_at"], 0)
 
+    def test_concurrent_records_keep_chain_valid(self) -> None:
+        path = self.tmp / "audit.jsonl"
+
+        def worker(n: int) -> None:
+            for i in range(20):
+                enterprise.record(f"e{n}", path=path, i=i)
+
+        threads = [threading.Thread(target=worker, args=(n,)) for n in range(2)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        report = enterprise.verify_chain(path)
+        self.assertTrue(report["ok"], report["reason"])
+        self.assertEqual(report["entries"], 40)
+
     def test_export_is_gated(self) -> None:
         path = self.tmp / "audit.jsonl"
         enterprise.record("analyze", path=path)
@@ -413,6 +430,12 @@ class LifecycleCliTests(TempDirTest):
             code, out = self._run(["license", "status"])
         self.assertEqual(code, 1)
         self.assertIn("community", out)
+
+    def test_license_features_succeeds_for_community(self) -> None:
+        with patch.dict(os.environ, {"RE_LICENSE_PATH": str(self.tmp / "none.json")}):
+            code, out = self._run(["license", "features"])
+        self.assertEqual(code, 0)
+        self.assertIn("core", out)
 
     def test_doctor_json_subset(self) -> None:
         code, out = self._run(["doctor", "--only", "python,platform", "--json"])

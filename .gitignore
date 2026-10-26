@@ -15,6 +15,7 @@ config.json
 config.json.*.bak
 license.json
 audit.jsonl
+audit.jsonl.lock
 audit-export.json
 *.key
 .secrets/

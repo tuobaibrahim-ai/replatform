@@ -6,8 +6,12 @@
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
+import importlib
 import json
+import os
+from collections.abc import Iterator
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -41,22 +45,61 @@ def _read_entries(path: Path) -> list[dict]:
     return entries
 
 
+@contextlib.contextmanager
+def _file_lock(path: Path) -> Iterator[None]:
+    """قفل بين العمليات يمنع كسر السلسلة عند كتابة متزامنة.
+
+    Windows: `msvcrt.locking` على ملف قفل منفصل. غير Windows: `fcntl.flock`.
+    """
+    lock = path.with_name(path.name + ".lock")
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    handle = open(lock, "a+b")
+    try:
+        if os.name == "nt":
+            import msvcrt
+
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+        else:
+            fcntl = importlib.import_module("fcntl")
+
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        yield
+    finally:
+        try:
+            if os.name == "nt":
+                import msvcrt
+
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                fcntl = importlib.import_module("fcntl")
+
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        except OSError:
+            pass
+        handle.close()
+
+
 def record(event: str, path: str | Path | None = None, **fields) -> dict:
-    """يضيف حدثاً موقّعاً بالسلسلة إلى سجل التدقيق."""
+    """يضيف حدثاً موقّعاً بالسلسلة إلى سجل التدقيق (آمن للتزامن)."""
     target = Path(path) if path is not None else AUDIT_PATH
-    entries = _read_entries(target)
-    previous = entries[-1].get("hash", GENESIS) if entries else GENESIS
-    entry = {
-        "ts": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
-        "event": event,
-        "version": __version__,
-        **fields,
-        "prev": previous,
-    }
-    entry["hash"] = hashlib.sha256(previous.encode("ascii") + _canonical(entry)).hexdigest()
     target.parent.mkdir(parents=True, exist_ok=True)
-    with open(target, "a", encoding="utf-8") as handle:
-        handle.write(json.dumps(entry, ensure_ascii=False, sort_keys=True) + "\n")
+    with _file_lock(target):
+        entries = _read_entries(target)
+        previous = entries[-1].get("hash", GENESIS) if entries else GENESIS
+        entry = {
+            "ts": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+            "event": event,
+            "version": __version__,
+            **fields,
+            "prev": previous,
+        }
+        entry["hash"] = hashlib.sha256(
+            previous.encode("ascii") + _canonical(entry)
+        ).hexdigest()
+        with open(target, "a", encoding="utf-8") as handle:
+            handle.write(json.dumps(entry, ensure_ascii=False, sort_keys=True) + "\n")
     return entry
 
 

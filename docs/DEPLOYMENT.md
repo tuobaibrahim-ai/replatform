@@ -1,4 +1,4 @@
-# دليل النشر — REPLATFORM 1.5.0
+# دليل النشر — REPLATFORM 1.5.1
 
 ## 1. المتطلبات
 
@@ -10,18 +10,18 @@
 | القرص | 200 MB (بلا أدوات خارجية) | 4 GB مع Ghidra/JDK |
 | الشبكة | غير مطلوبة للتحليل الثابت | مطلوبة للتكاملات ومزوّد LLM |
 
-**لا يعمل على Linux/macOS** في 1.5.0 (Windows Sandbox وأدوات APK/PE مرتبطة
+**لا يعمل على Linux/macOS** في 1.5.1 (Windows Sandbox وأدوات APK/PE مرتبطة
 بمنصة ويندوز). التحليل الثابت قد يعمل جزئياً، لكنه غير مدعوم.
 
 ## 2. خيارات التثبيت
 
 ### الخيار أ — حزمة محمولة (موصى به للبيع/التوزيع)
 
-1. نزّل `replatform-1.5.0-portable.zip` من صفحة الإصدارات.
+1. نزّل `replatform-1.5.1-portable.zip` من صفحة الإصدارات.
 2. تحقق من البصمة:
 
 ```powershell
-Get-FileHash .\replatform-1.5.0-portable.zip -Algorithm SHA256
+Get-FileHash .\replatform-1.5.1-portable.zip -Algorithm SHA256
 Get-Content .\SHA256SUMS
 ```
 
@@ -29,7 +29,7 @@ Get-Content .\SHA256SUMS
 4. ثبّت:
 
 ```powershell
-cd replatform-1.5.0
+cd replatform-1.5.1
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
@@ -64,7 +64,7 @@ python -m pip install -e ".[dev]"
 ### الخيار ج — wheel مباشر
 
 ```powershell
-python -m pip install replatform-1.5.0-py3-none-any.whl
+python -m pip install replatform-1.5.1-py3-none-any.whl
 replatform version
 ```
 
@@ -159,14 +159,14 @@ python -m replatform serve --host 0.0.0.0 --port 8765 --token $token --allowed-h
 
 ```powershell
 # 1) تحقق من البصمة
-Get-FileHash -Algorithm SHA256 .\replatform-1.5.0-portable.zip
+Get-FileHash -Algorithm SHA256 .\replatform-1.5.1-portable.zip
 # طابقها مع SHA256SUMS المنشور (أو تحقق من توقيع Sigstore)
 
 # 2) معاينة (لا تغيير)
-powershell -ExecutionPolicy Bypass -File .\upgrade.ps1 -Bundle .\replatform-1.5.0-portable.zip -Sha256 <hash>
+powershell -ExecutionPolicy Bypass -File .\upgrade.ps1 -Bundle .\replatform-1.5.1-portable.zip -Sha256 <hash>
 
 # 3) تطبيق (بياناتك محفوظة تلقائياً)
-powershell -ExecutionPolicy Bypass -File .\upgrade.ps1 -Bundle .\replatform-1.5.0-portable.zip -Sha256 <hash> -Yes
+powershell -ExecutionPolicy Bypass -File .\upgrade.ps1 -Bundle .\replatform-1.5.1-portable.zip -Sha256 <hash> -Yes
 ```
 
 الترقية تحفظ `config.json` و`workspaces/` و`plugins/` و`license.json`، وتُنشئ نسخة

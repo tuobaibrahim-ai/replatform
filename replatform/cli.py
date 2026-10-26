@@ -885,7 +885,7 @@ def cmd_license(args) -> int:
         state = licensing.status()
         for feature in state["features"]:
             print(f"  • {feature}")
-        return 0 if state["valid"] else 1
+        return 0
     else:
         return 1
     if args.json:
@@ -1323,7 +1323,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_cfg.set_defaults(func=cmd_config)
 
     p_doc = sub.add_parser("doctor", help="تشخيص جاهزية التثبيت وحزمة دعم")
-    p_doc.add_argument("--json", action="store_true")
+    p_doc.add_argument("--json", action="store_true", help="إخراج JSON")
     p_doc.add_argument("--only", help="فحوص محددة: python,config,tools")
     p_doc.add_argument("--bundle", nargs="?", const="doctor-bundle.zip",
                        help="كتابة حزمة تشخيص (بلا أسرار)")
@@ -1332,7 +1332,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_lic = sub.add_parser("license", help="الترخيص التجاري والاستحقاقات (offline)")
     p_lic.add_argument("action", choices=("status", "activate", "deactivate", "features"))
     p_lic.add_argument("file", nargs="?", help="ملف الترخيص عند التفعيل")
-    p_lic.add_argument("--json", action="store_true")
+    p_lic.add_argument("--json", action="store_true", help="إخراج JSON")
     p_lic.set_defaults(func=cmd_license)
 
     p_audit = sub.add_parser("audit", help="سجل تدقيق بسلسلة تجزئة (مؤسسي)")
@@ -1340,20 +1340,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_audit.add_argument("--event", help="اسم الحدث عند التسجيل")
     p_audit.add_argument("--target", help="الهدف المرتبط بالحدث")
     p_audit.add_argument("--out", help="ملف التصدير")
-    p_audit.add_argument("--json", action="store_true")
+    p_audit.add_argument("--json", action="store_true", help="إخراج JSON")
     p_audit.set_defaults(func=cmd_audit)
 
     p_fleet = sub.add_parser("fleet", help="تقرير أسطول مساحات العمل (مؤسسي)")
     p_fleet.add_argument("action", choices=("report",))
     p_fleet.add_argument("--out", help="ملف التقرير JSON")
-    p_fleet.add_argument("--json", action="store_true")
+    p_fleet.add_argument("--json", action="store_true", help="إخراج JSON")
     p_fleet.set_defaults(func=cmd_fleet)
 
     p_up = sub.add_parser("upgrade", help="ترقية آمنة من حزمة محمولة مع تراجع")
     p_up.add_argument("bundle", nargs="?", help="ملف ZIP المحمول")
     p_up.add_argument("--sha256", help="البصمة المتوقعة للحزمة")
     p_up.add_argument("--target", help="مجلد التثبيت (افتراضي: الجذر)")
-    p_up.add_argument("--dry-run", action="store_true")
+    p_up.add_argument("--dry-run", action="store_true", help="معاينة بلا كتابة")
     p_up.add_argument("--rollback", help="استعادة نسخة تراجع")
     p_up.add_argument("--yes", action="store_true", help="تأكيد صريح للترقية")
     p_up.set_defaults(func=cmd_upgrade)
