@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -43,8 +44,10 @@ class ParseSpecTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 patcher.parse_spec(spec, "utf-8", allow_wild=True)
 
+    @unittest.skipUnless(os.name == "nt", "مسارات النظام المفحوصة خاصة بـ Windows")
     def test_system_path_detection(self) -> None:
         self.assertTrue(patcher.is_system_path(Path(r"C:\Windows\System32\kernel32.dll")))
+        self.assertFalse(patcher.is_system_path(Path.cwd() / "sample.exe"))
 
 
 class PatchTests(TempDirTest):

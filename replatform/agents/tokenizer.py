@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+import importlib
 import json
 import math
 from functools import lru_cache
+from typing import Any
 
 try:  # اختياري بالكامل؛ لا نكسر التشغيل إن لم يكن مثبتاً.
-    import tiktoken
+    tiktoken: Any = importlib.import_module("tiktoken")
 except Exception:  # noqa: BLE001
-    tiktoken = None  # type: ignore[assignment]
+    tiktoken = None
 
 
 @lru_cache(maxsize=8)
