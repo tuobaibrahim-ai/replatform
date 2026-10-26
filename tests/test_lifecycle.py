@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import io
 import json
 import os
+import sys
 import tempfile
 import unittest
 import zipfile
@@ -422,6 +424,61 @@ class LifecycleCliTests(TempDirTest):
         code, out = self._run(["upgrade", str(self.tmp / "x.zip")])
         self.assertEqual(code, 2)
         self.assertIn("--yes", out)
+
+
+class StdioTests(TempDirTest):
+    class FakeStream:
+        def __init__(self, tty: bool) -> None:
+            self.tty = tty
+            self.encoding = "cp1252"
+            self.errors = "strict"
+            self.calls: list[dict] = []
+
+        def isatty(self) -> bool:
+            return self.tty
+
+        def reconfigure(self, **kwargs) -> None:
+            self.calls.append(kwargs)
+            self.encoding = kwargs.get("encoding", self.encoding)
+            self.errors = kwargs.get("errors", self.errors)
+
+    def test_redirected_stream_becomes_utf8(self) -> None:
+        from replatform.core import stdio
+
+        out = self.FakeStream(tty=False)
+        with patch.object(sys, "stdout", out), patch.object(sys, "stderr", out):
+            stdio.configure()
+        self.assertEqual(out.encoding.lower().replace("-", ""), "utf8")
+        self.assertEqual(out.errors, "replace")
+
+    def test_tty_keeps_encoding_but_replaces(self) -> None:
+        from replatform.core import stdio
+
+        out = self.FakeStream(tty=True)
+        with patch.object(sys, "stdout", out), patch.object(sys, "stderr", out):
+            stdio.configure()
+        self.assertEqual(out.encoding, "cp1252")
+        self.assertEqual(out.errors, "replace")
+
+    def test_unsupported_stream_is_ignored(self) -> None:
+        from replatform.core import stdio
+
+        with patch.object(sys, "stdout", io.StringIO()), patch.object(sys, "stderr", None):
+            stdio.configure()  # يجب ألا يرفع استثناءً
+
+    def test_arabic_output_survives_cp1252_pipe(self) -> None:
+        import subprocess
+
+        root = Path(__file__).resolve().parents[1]
+        env = {**os.environ, "PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
+        result = subprocess.run(
+            [sys.executable, "-m", "replatform.tools.secretscan", "--root", str(self.tmp)],
+            cwd=root, env=env, capture_output=True, timeout=120,
+        )
+        output = result.stdout.decode("utf-8", errors="replace")
+        self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", "replace"))
+        self.assertIn("0", output)
+        self.assertNotIn("UnicodeEncodeError", result.stderr.decode("utf-8", "replace"))
 
 
 class UpgradeTests(TempDirTest):

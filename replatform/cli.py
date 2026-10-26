@@ -16,6 +16,7 @@ from .agents.loop import run_agent
 from .agents.provider import ProviderError, build_provider
 from .analyzers import Target, load_analyzers, run_analyzers
 from .core import state
+from .core import stdio
 from .core.config import (
     CONFIG_PATH,
     ROOT,
@@ -1366,6 +1367,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    stdio.configure()
     parser = build_parser()
     args = parser.parse_args(argv)
     if not getattr(args, "func", None):

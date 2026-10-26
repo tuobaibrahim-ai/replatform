@@ -11,6 +11,8 @@ import json
 import re
 from pathlib import Path
 
+from ..core import stdio
+
 ROOT = Path(__file__).resolve().parents[2]
 
 RULES: tuple[tuple[str, re.Pattern[str], str], ...] = (
@@ -111,6 +113,7 @@ def scan(root: str | Path = ROOT) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
+    stdio.configure()
     parser = argparse.ArgumentParser(prog="secretscan", description="فحص الأسرار قبل النشر")
     parser.add_argument("--root", default=str(ROOT))
     parser.add_argument("--json", action="store_true")

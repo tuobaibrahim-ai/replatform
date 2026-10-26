@@ -13,6 +13,7 @@ import secrets
 from datetime import date, timedelta
 from pathlib import Path
 
+from ..core import stdio
 from . import licensing
 
 
@@ -111,6 +112,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    stdio.configure()
     args = build_parser().parse_args(argv)
     return args.func(args)
 

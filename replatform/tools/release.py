@@ -17,6 +17,7 @@ from importlib import metadata
 from pathlib import Path
 
 from .. import __version__
+from ..core import stdio
 
 ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_DEPS = ("pefile", "asn1crypto", "certifi")
@@ -292,6 +293,7 @@ def check_reproducible(version: str | None = None) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
+    stdio.configure()
     parser = argparse.ArgumentParser(
         prog="python -m replatform.tools.release",
         description="أدوات إصدار REPLATFORM: SBOM، بصمات، حزمة محمولة.",

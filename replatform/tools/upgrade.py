@@ -14,6 +14,7 @@ from datetime import datetime
 from pathlib import Path, PurePosixPath
 
 from .. import __version__
+from ..core import stdio
 from ..core.util import sha256_file
 
 
@@ -167,6 +168,7 @@ def rollback(backup: str | Path, target: str | Path) -> dict:
 def _main(argv: list[str] | None = None) -> int:
     import argparse
 
+    stdio.configure()
     parser = argparse.ArgumentParser(prog="upgrade", description="ترقية REPLATFORM من حزمة")
     parser.add_argument("bundle", help="ملف ZIP المحمول")
     parser.add_argument("--target", default=str(Path(__file__).resolve().parents[2]))

@@ -115,14 +115,17 @@ See [`SECURITY.md`](SECURITY.md) for the threat model and reporting channel.
 
 | Metric | Value |
 |---|---|
-| `unittest` tests | **604** — no network, no real samples |
-| Unit coverage | **95%** (CI gate: 90%) |
+| `unittest` tests | **608** — no network, no real samples |
+| Unit coverage | **94%** (CI gate: 90%) |
+| Type checking | `mypy` — zero errors across 49 files |
 | Static security scan | `flake8-bandit` (`S`) rules inside `ruff` — zero unjustified findings |
+| Secret scan | `secretscan` — zero findings (high-confidence patterns, redacted output) |
 | Fuzzing | 8 properties × 300 + 120 = 2,520 cases, fixed seed |
 | `selftest --full` | 29/29 |
 | `benchmark` | 5/5 |
-| CI | Windows · Python 3.12 & 3.13 · lint + compile + tests + coverage + dependency audit + build + release dry-run |
-| Release | CycloneDX 1.5 SBOM + `SHA256SUMS` + deterministic portable ZIP |
+| Deterministic build | `--reproducible` yields byte-identical hashes |
+| CI | Windows 2022/2025 · Python 3.11–3.14 · lint + mypy + tests + coverage + audit + build + reproducible release dry-run |
+| Release | CycloneDX 1.5 SBOM + `SHA256SUMS` + deterministic portable ZIP + Sigstore signature |
 
 ```powershell
 python -m ruff check replatform tests repl.py
