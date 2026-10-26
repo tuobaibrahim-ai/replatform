@@ -20,7 +20,8 @@
 CI (`.github/workflows/ci.yml`) يشغّل Lint (مع `S`) وmypy وCompile وUnit
 وCoverage وDependency audit وSelf-test على Windows 2022 و2025 مع Python
 3.11–3.14، ويثبت الاعتماديات من `requirements-dev.lock` بالبصمات، ويتحقق من
-البناء الحتمي، ويشغّل فحص الأسرار (`secretscan`) و`pip-audit` على Linux.
+البناء الحتمي، ويشغّل على Linux: `pip-audit` و`secretscan` ومجموعة الاختبارات
+كاملة كإشارة قابلية نقل (المنتج مدعوم على Windows فقط).
 
 ## 2. الوضع الفعلي (2026-10-26)
 
@@ -30,7 +31,7 @@ CI (`.github/workflows/ci.yml`) يشغّل Lint (مع `S`) وmypy وCompile وUn
 | تغطية الوحدات | **94%** (الحد 90%) |
 | اختبارات فاشلة | 0 |
 | `ruff` (بما فيه `S`) | ناجح |
-| `mypy` | صفر أخطاء في 47 ملفاً |
+| `mypy` | صفر أخطاء في 48 ملفاً |
 | `pip-audit` | صفر ثغرات معروفة |
 | `selftest --full` | 29/29 |
 | `benchmark` | 5/5 |

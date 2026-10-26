@@ -147,11 +147,14 @@ python -m replatform selftest --full
 
 ## License & commercial
 
-- **Core is MIT** — commercial use, modification, and redistribution allowed.
-  No DRM, no license keys, no telemetry. See [`LICENSE`](LICENSE).
-- **Revenue comes from services**: priority support, enterprise deployment,
-  custom analyzers/rules, security review, and training. See
-  [`COMMERCIAL.md`](COMMERCIAL.md).
+- **Core is MIT** — all analysis features work without a license, with no DRM and
+  no license server call. See [`LICENSE`](LICENSE).
+- **Open core since 1.5.0** — two *new* enterprise capabilities (`audit` and
+  `fleet`) are subscription-licensed; no existing feature was removed. Plans and
+  entitlements: [`COMMERCIAL.md`](COMMERCIAL.md) · sales runbook:
+  [`docs/SALES.md`](docs/SALES.md).
+- **Revenue**: Professional/Enterprise subscriptions, priority support,
+  enterprise deployment, custom analyzers/rules, security review, and training.
 - Third-party licenses: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ---
@@ -166,7 +169,8 @@ python -m replatform selftest --full
   but their response normalization is covered by fixtures and missing-key
   refusal is verified.
 - **Behavioral monitoring is limited**: Sandbox captures `stdout` only.
-- **No code signing yet**; distribution is ZIP + checksums.
+- **No code-signing certificate yet**; distribution is ZIP + `SHA256SUMS` +
+  keyless Sigstore signatures in CI (verifiable with `cosign verify-blob`).
 
 ---
 

@@ -158,30 +158,53 @@ python -m replatform serve --host 0.0.0.0 --port 8765 --token $token --allowed-h
 ## 6. الترقية
 
 ```powershell
-# احتفظ بالإعدادات ومساحات العمل خارج مجلد التثبيت أو انسخها احتياطياً
-Copy-Item config.json config.backup.json
-Copy-Item workspaces workspaces.backup -Recurse
+# 1) تحقق من البصمة
+Get-FileHash -Algorithm SHA256 .\replatform-1.5.0-portable.zip
+# طابقها مع SHA256SUMS المنشور (أو تحقق من توقيع Sigstore)
 
-# حزمة جديدة
-powershell -ExecutionPolicy Bypass -File .\install.ps1
-python -m replatform selftest
+# 2) معاينة (لا تغيير)
+powershell -ExecutionPolicy Bypass -File .\upgrade.ps1 -Bundle .\replatform-1.5.0-portable.zip -Sha256 <hash>
+
+# 3) تطبيق (بياناتك محفوظة تلقائياً)
+powershell -ExecutionPolicy Bypass -File .\upgrade.ps1 -Bundle .\replatform-1.5.0-portable.zip -Sha256 <hash> -Yes
+```
+
+الترقية تحفظ `config.json` و`workspaces/` و`plugins/` و`license.json`، وتُنشئ نسخة
+تراجع كاملة. بعدها:
+
+```powershell
+python -m replatform doctor
+python -m replatform config migrate --dry-run   # إن ظهر تحذير نسخة المخطط
 ```
 
 - الإصدارات الثانوية قد تغيّر واجهة CLI الداخلية؛ راجع `CHANGELOG.md`.
 - مساحات العمل بصيغة JSON مستقرة، لكن لا ضمان توافق رجعي كامل قبل 2.0.
+- الترقية لا تعمل إن كان المجلد قيد الاستخدام: أغلق كل الطرفيات ثم أعد المحاولة.
 
 ## 7. التراجع (Rollback)
 
+مسار النسخة الاحتياطية يُطبع في ناتج الترقية:
+
+```powershell
+python repl.py upgrade --rollback "<install>.backup-<timestamp>"
+```
+
 1. أوقف أي `serve`/`scan` جارٍ.
-2. استعد المجلد السابق من النسخة الاحتياطية أو أعد تثبيت الحزمة السابقة.
-3. استعد `config.json` و`workspaces/`.
-4. شغّل `python -m replatform version` و`selftest`.
+2. نفّذ أمر التراجع أعلاه (يعيد المجلد السابق كاملاً).
+3. شغّل `python -m replatform version` و`doctor`.
+4. إن فشل التراجع، استعد يدوياً من مجلد `.backup-*` أو من نسختك الخارجية.
 
 ## 8. إلغاء التثبيت
 
 ```powershell
-# من داخل مجلد التثبيت
-Remove-Item .venv -Recurse -Force
+# معاينة ما سيُحذف (يحفظ البيانات افتراضياً)
+powershell -ExecutionPolicy Bypass -File .\uninstall.ps1
+
+# تنفيذ: يحذف .venv والكاشات ويُبقي config/workspaces/license/audit
+powershell -ExecutionPolicy Bypass -File .\uninstall.ps1 -Yes
+
+# حذف البيانات أيضاً
+powershell -ExecutionPolicy Bypass -File .\uninstall.ps1 -Yes -PurgeData
 ```
 
 ثم احذف المجلد. لا يكتب المثبّت في Registry ولا في `Program Files`، ولا يترك
@@ -199,13 +222,16 @@ Remove-Item .venv -Recurse -Force
 | `403` في التكاملات | مفتاح غائب | اضبط متغير البيئة المطلوب |
 | PDF لا يُنشأ | لا Edge/Chrome | ثبّت متصفحاً أو `RE_BROWSER=<path>` |
 | بطء تحليل PE كبير | حدود مرتفعة | خفّض `analysis.pe_max_mb` |
+| `تعذّر استبدال المجلد` عند الترقية | ملفات قيد الاستخدام | أغلق كل الطرفيات/`serve` ثم أعد المحاولة |
+| `ترخيص مرفوض` | توقيع/مفتاح/مدة | راجع `python repl.py license status --json` و`docs/RUNBOOK.md` §5 |
 
 ## 10. قائمة تحقق ما قبل الإنتاج
 
 - [ ] تثبيت من حزمة متحقَّق من بصمتها (`SHA256SUMS`).
-- [ ] `selftest` ناجح.
+- [ ] `selftest` ناجح و`doctor` بلا `fail`.
 - [ ] `config.json` بلا مفاتيح، والتكاملات معطّلة إن لم تلزم.
 - [ ] حساب مستخدم غير مسؤول.
-- [ ] نسخ احتياطي مجدول لـ `workspaces/` و`config.json`.
+- [ ] نسخ احتياطي مجدول لـ `workspaces/` و`config.json` و`license.json`.
+- [ ] إن استُخدمت القدرات المؤسسية: `license activate` + `audit verify`.
 - [ ] سياسة واضحة: لا تشغيل عيّنات على المضيف؛ Sandbox/VM فقط.
 - [ ] مراجعة [`SECURITY.md`](../SECURITY.md) مع فريق الأمن.
