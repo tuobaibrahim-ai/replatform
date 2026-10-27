@@ -136,6 +136,9 @@ python -m replatform selftest --full
 - **مفتوح النواة منذ 1.5.0** — قدرتان مؤسسيتان جديدتان (`audit` و`fleet`)
   تُرخَّصان باشتراك، دون سحب أي ميزة قائمة. الخطط والاستحقاقات:
   [`COMMERCIAL.md`](COMMERCIAL.md) · دليل البيع: [`docs/SALES.md`](docs/SALES.md).
+- **حزمة بيع جاهزة:** [`sales/`](sales/) — ورقة تعريف، أسعار، عرض، طلب، فاتورة،
+  تسليم، اعتراضات، DPA، استبيان أمني. صفحة هبوط: [`site/`](site/).
+  حالة الجاهزية: [`docs/COMMERCIAL-READINESS.md`](docs/COMMERCIAL-READINESS.md).
 - **الدخل**: اشتراكات Professional/Enterprise، دعم بأولوية، نشر مؤسسي، إضافات
   مخصصة، مراجعة أمنية، وتدريب.
 - تراخيص الاعتمادات والأدوات الخارجية: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).

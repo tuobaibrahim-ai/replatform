@@ -15,7 +15,7 @@
 
 1. راجع [`README.md`](README.md) و[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
    و[`PLATFORM.md`](PLATFORM.md).
-2. حدّث إلى أحدث إصدار `1.4.x`.
+2. حدّث إلى أحدث إصدار `1.5.x`.
 3. شغّل التشخيص وضمّن نتيجته:
 
 ```powershell
@@ -41,13 +41,13 @@ python -m replatform config show
 - تثبيت Ghidra/JDK/apktool/jadx على جهازك.
 - استشارات قانونية أو امتثال.
 - كتابة قواعد YARA مخصصة أو إضافات.
-- دعم إصدارات أقدم من `1.3.x`.
+- دعم إصدارات أقدم من `1.4.x`.
 
 ## 5. الدعم التجاري
 
 تتوفر خدمات مدفوعة (دعم بأولوية، نشر مؤسسي، إضافات، تدريب) موضحة في
-[`COMMERCIAL.md`](COMMERCIAL.md). التواصل عبر GitHub إلى `@tuobaibrahim-ai`
-مع وصف النطاق وحجم الفريق والبيئة.
+[`COMMERCIAL.md`](COMMERCIAL.md) و[`sales/PRICING.md`](sales/PRICING.md).
+التواصل عبر GitHub إلى `@tuobaibrahim-ai` مع وصف النطاق وحجم الفريق والبيئة.
 
 ## 6. زمن الإصلاح
 

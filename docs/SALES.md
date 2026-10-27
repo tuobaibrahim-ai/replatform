@@ -2,6 +2,10 @@
 
 دليل تشغيلي للمالك: من استفسار العميل إلى ترخيص مفعّل وتجديد.
 
+> **حزمة البيع الجاهزة:** [`sales/`](../sales/) — ابدأ بـ
+> [`ONE-PAGER.md`](../sales/ONE-PAGER.md) و[`PRICING.md`](../sales/PRICING.md).
+> **حالة الجاهزية:** [`COMMERCIAL-READINESS.md`](COMMERCIAL-READINESS.md).
+
 ## 1. المسار الكامل
 
 ```
@@ -23,7 +27,8 @@
 
 ## 3. العرض
 
-استخدم `docs/COMMERCIAL.md` كأساس، وخصّص:
+استخدم [`sales/QUOTE-TEMPLATE.md`](../sales/QUOTE-TEMPLATE.md) و
+[`sales/PRICING.md`](../sales/PRICING.md) كأساس، وخصّص:
 
 - النطاق (القدرات + عدد المقاعد + المدة).
 - السعر الإجمالي والعملة وطريقة السداد.
@@ -69,6 +74,9 @@ python -m replatform.tools.license_admin verify "C:\secure\ACME-2027.json"
 يجب أن يعيد `"valid": true` و`"features"` متوقعة.
 
 ## 5. التسليم
+
+استخدم [`sales/DELIVERY-CHECKLIST.md`](../sales/DELIVERY-CHECKLIST.md) كقائمة
+تحقق إلزامية. باختصار:
 
 1. أرسل الملف عبر قناة مشفّرة أو بوابة العميل (لا مرفقات بريد عادية).
 2. أرسل تعليمات التفعيل:

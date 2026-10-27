@@ -99,5 +99,8 @@ jobs:
       - name: Secret scan
         run: python -m replatform.tools.secretscan --json
 
+      - name: Commercial site check
+        run: python scripts/site_tool.py check
+
       - name: Tests (Linux regression)
         run: python -m unittest discover -s tests
