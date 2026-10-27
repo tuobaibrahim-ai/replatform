@@ -1,0 +1,18 @@
+{
+  "version": "1.5.2",
+  "contact_email": "",
+  "github": "https://github.com/tuobaibrahim-ai",
+  "repo": "https://github.com/tuobaibrahim-ai/replatform",
+  "releases": "https://github.com/tuobaibrahim-ai/replatform/releases",
+  "pricing_url": "https://github.com/tuobaibrahim-ai/replatform/blob/master/sales/PRICING.md",
+  "one_pager_url": "https://github.com/tuobaibrahim-ai/replatform/blob/master/sales/ONE-PAGER.md",
+  "readiness_url": "https://github.com/tuobaibrahim-ai/replatform/blob/master/docs/COMMERCIAL-READINESS.md",
+  "security_url": "https://github.com/tuobaibrahim-ai/replatform/blob/master/SECURITY.md",
+  "deploy_url": "https://github.com/tuobaibrahim-ai/replatform/blob/master/docs/DEPLOYMENT.md",
+  "sla_url": "https://github.com/tuobaibrahim-ai/replatform/blob/master/docs/SLA.md",
+  "eula_url": "https://github.com/tuobaibrahim-ai/replatform/blob/master/docs/EULA.md",
+  "commercial_url": "https://github.com/tuobaibrahim-ai/replatform/blob/master/COMMERCIAL.md",
+  "sales_url": "https://github.com/tuobaibrahim-ai/replatform/tree/master/sales",
+  "trademark_url": "https://github.com/tuobaibrahim-ai/replatform/blob/master/TRADEMARK.md",
+  "license_url": "https://github.com/tuobaibrahim-ai/replatform/blob/master/LICENSE"
+}

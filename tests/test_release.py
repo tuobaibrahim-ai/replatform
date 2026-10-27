@@ -151,6 +151,10 @@ class PortableTests(TempDirTest):
         (root / "replatform" / "__pycache__" / "x.pyc").write_bytes(b"junk")
         (root / "docs").mkdir()
         (root / "docs" / "ARCHITECTURE.md").write_text("# a", "utf-8")
+        (root / "sales").mkdir()
+        (root / "sales" / "PRICING.md").write_text("# p", "utf-8")
+        (root / "site").mkdir()
+        (root / "site" / "index.html").write_text("<!doctype html>", "utf-8")
         (root / "repl.py").write_text("print('x')", "utf-8")
         (root / "README.md").write_text("# readme", "utf-8")
         return root
@@ -165,6 +169,8 @@ class PortableTests(TempDirTest):
             readme = archive.read("replatform-1.2.3/PORTABLE-README.txt").decode("utf-8")
         self.assertIn("replatform-1.2.3/repl.py", names)
         self.assertIn("replatform-1.2.3/docs/ARCHITECTURE.md", names)
+        self.assertIn("replatform-1.2.3/sales/PRICING.md", names)
+        self.assertIn("replatform-1.2.3/site/index.html", names)
         self.assertFalse(any("__pycache__" in name for name in names))
         self.assertFalse(any(name.endswith(".pyc") for name in names))
         self.assertIn("1.2.3", readme)
@@ -183,13 +189,16 @@ class PortableTests(TempDirTest):
         root = self._fixture_root()
         # شجرة عمل Windows قد تحمل CRLF، وCI يستلم LF: الناتج يجب أن يتطابق.
         (root / "README.md").write_bytes(b"# a\r\nline\r\n")
+        (root / "site" / "index.html").write_bytes(b"<p>a</p>\r\n<p>b</p>\r\n")
         (root / "install.ps1").write_bytes(b"Write-Host 'a'\nWrite-Host 'b'\n")
         with patch.object(release, "ROOT", root):
             bundle = release.build_portable(self.tmp / "out", "1.2.3")
         with zipfile.ZipFile(bundle) as archive:
             readme = archive.read("replatform-1.2.3/README.md")
+            page = archive.read("replatform-1.2.3/site/index.html")
             script = archive.read("replatform-1.2.3/install.ps1")
         self.assertNotIn(b"\r", readme)
+        self.assertNotIn(b"\r", page)
         self.assertEqual(script, b"Write-Host 'a'\r\nWrite-Host 'b'\r\n")
 
     def test_normalize_bytes_handles_binary_untouched(self) -> None:

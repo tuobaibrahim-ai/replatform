@@ -157,6 +157,7 @@ _PORTABLE_FILES = (
     "CHANGELOG.md",
     "PLATFORM.md",
     "INTEGRATIONS.md",
+    "PROJECT_REPORT.md",
     "SECURITY.md",
     "SUPPORT.md",
     "COMMERCIAL.md",
@@ -172,12 +173,12 @@ _PORTABLE_FILES = (
     "pyproject.toml",
     "MANIFEST.in",
 )
-_PORTABLE_DIRS = ("replatform", "rules", "skills", "docs", "scripts", "tests")
+_PORTABLE_DIRS = ("replatform", "rules", "skills", "docs", "scripts", "tests", "sales", "site")
 
 # تطبيع نهايات الأسطر داخل الحزمة: المستودع LF، وPowerShell/CMD يتطلبان CRLF.
 _LF_SUFFIXES = {
     ".py", ".md", ".txt", ".json", ".toml", ".cff", ".yar",
-    ".yml", ".yaml", ".in", ".example", ".cfg", ".ini",
+    ".yml", ".yaml", ".in", ".example", ".cfg", ".ini", ".html", ".css",
 }
 _CRLF_SUFFIXES = {".ps1", ".psm1", ".cmd", ".bat"}
 _LF_NAMES = {"LICENSE", "NOTICE"}

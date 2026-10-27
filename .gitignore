@@ -13,6 +13,7 @@ bin/
 # الإعدادات الحساسة (لا تُرفع أبداً)
 config.json
 config.json.*.bak
+!site/config.json
 license.json
 audit.jsonl
 audit.jsonl.lock
