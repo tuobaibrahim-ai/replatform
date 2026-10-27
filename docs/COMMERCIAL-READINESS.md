@@ -31,7 +31,7 @@
 | ترخيص | Ed25519 offline + 14 يوماً سماح | `replatform/tools/licensing.py` |
 | ترقية/تراجع | مختبرة E2E من 1.5.0/1.5.1 مع حفظ `audit.jsonl` | `docs/RUNBOOK.md` |
 | وثائق قانونية | EULA، SLA، DPA، استرداد، استخدام مسؤول | `docs/`, `sales/` |
-| حزمة بيع | 12 ملفاً: عرض، تسعير، طلب، فاتورة، تسليم، اعتراضات | `sales/` |
+| حزمة بيع | 13 ملفاً: عرض، تسعير، طلب، فاتورة، تسليم، اعتراضات، DPA | `sales/` |
 | صفحة هبوط | عربية RTL، بلا اعتماديات خارجية، قابلة للنشر | `site/index.html` |
 | استبيان أمني | 19 قسماً بأجوبة صادقة | `sales/SECURITY-QUESTIONNAIRE.md` |
 | CI | Windows 2022/2025 × Python 3.11–3.14 | `.github/workflows/ci.yml` |
