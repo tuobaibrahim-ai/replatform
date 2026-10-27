@@ -16,18 +16,22 @@ python repl.py doctor --bundle support.zip   # بلا أسرار، للمشار�
 
 ```powershell
 # 1) نزّل الحزمة وSHA256SUMS، ثم تحقق
-Get-FileHash -Algorithm SHA256 .\replatform-1.5.1-portable.zip
+Get-FileHash -Algorithm SHA256 .\replatform-1.5.2-portable.zip
 
-# 2) معاينة (لا تغيير)
-python repl.py upgrade .\replatform-1.5.1-portable.zip --dry-run
-
-# 3) تطبيق مع البصمة
-python repl.py upgrade .\replatform-1.5.1-portable.zip --sha256 <hash> --yes
+# 2) فُكّ الحزمة الجديدة وشغّل سكربتها من خارج مجلد التثبيت
+Expand-Archive .\replatform-1.5.2-portable.zip -DestinationPath .\new
+powershell -ExecutionPolicy Bypass -File .\new\replatform-1.5.2\upgrade.ps1 `
+  -Bundle .\replatform-1.5.2-portable.zip -Target C:\REPLATFORM -Sha256 <hash> -Yes
 ```
 
 يُحفظ تلقائياً: `config.json`, `workspaces/`, `plugins/`, `license.json`,
 `audit.jsonl` (سجل التدقيق وقفل التزامن)، `audit-export.json`.
 نسخة التراجع تُطبع في الناتج.
+
+- **من 1.5.1 فصاعداً:** `audit.jsonl` محفوظ تلقائياً.
+- **من 1.5.0 أو أقدم:** الكود القديم ينفّذ الترقية، لذا إمّا استخدم سكربت الحزمة
+  الجديدة أعلاه، أو احتفظ بنسخة من `audit.jsonl` و`audit.jsonl.lock` وأعدها بعدها.
+- **لا تشغّل الترقية ومجلد العمل داخل مجلد التثبيت** (يفشل بـ `WinError 32`).
 
 ### التراجع
 
@@ -46,12 +50,14 @@ python repl.py config migrate             # نسخة احتياطية + كتاب
 
 ## 4. فشل الترقية بسبب ملف مقفول
 
-الأعراض: `تعذّر استبدال المجلد (قد يكون قيد الاستخدام)`.
+الأعراض: `تعذّر استبدال المجلد (قد يكون قيد الاستخدام)` أو `WinError 32`.
 
 1. أغلق كل طرفيات وأوامر REPLATFORM وواجهة الويب.
 2. أوقف أي مهمة مجدولة تستدعي `repl.py`.
-3. أعد الأمر. إن تكرر، أعد تشغيل الجهاز (بقرارك) ثم أعد المحاولة.
-4. إن بقي مجلد `.staging-*`، احذفه يدوياً بعد التأكد من عدم وجود عملية نشطة.
+3. شغّل الترقية من خارج مجلد التثبيت (مثلاً من `%TEMP%`)، أو استخدم سكربت
+   الحزمة الجديدة مع `-Target`. هذا يكفي في معظم الحالات.
+4. أعد الأمر. إن تكرر، أعد تشغيل الجهاز (بقرارك) ثم أعد المحاولة.
+5. إن بقي مجلد `.staging-*`، احذفه يدوياً بعد التأكد من عدم وجود عملية نشطة.
 
 ## 5. ترخيص لا يُقبل
 

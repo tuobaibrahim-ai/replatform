@@ -7,10 +7,13 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import shutil
+import tempfile
 import zipfile
+from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path, PurePosixPath
 
@@ -25,6 +28,32 @@ class UpgradeError(RuntimeError):
 
 def _stamp() -> str:
     return datetime.now().strftime("%Y%m%d-%H%M%S")
+
+
+@contextlib.contextmanager
+def _safe_cwd(directory: Path) -> Iterator[None]:
+    """ينتقل مؤقتاً خارج `directory` قبل إعادة تسميته.
+
+    على Windows يمنع النظام إعادة تسمية مجلد هو مجلد العمل الحالي للعملية
+    (`WinError 32`). هذا يحدث في التدفق الموثّق عندما يشغّل المستخدم الترقية من
+    داخل مجلد التثبيت. ننتقل إلى مجلد مؤقت ثم نعيد مجلد العمل الأصلي.
+    """
+    original = Path.cwd()
+    try:
+        inside = original.resolve().is_relative_to(directory.resolve())
+    except (OSError, ValueError):
+        inside = False
+    if not inside:
+        yield
+        return
+    os.chdir(tempfile.gettempdir())
+    try:
+        yield
+    finally:
+        try:
+            os.chdir(original)
+        except OSError:
+            os.chdir(tempfile.gettempdir())
 
 
 def verify_bundle(bundle: str | Path, expected_sha256: str = "") -> dict:
@@ -126,15 +155,16 @@ def install_bundle(
                 "target": str(destination),
             }
         moved_old = False
-        if destination.exists():
-            os.replace(destination, backup)
-            moved_old = True
-        try:
-            os.replace(staging, destination)
-        except OSError:
-            if moved_old:
-                os.replace(backup, destination)
-            raise
+        with _safe_cwd(destination):
+            if destination.exists():
+                os.replace(destination, backup)
+                moved_old = True
+            try:
+                os.replace(staging, destination)
+            except OSError:
+                if moved_old:
+                    os.replace(backup, destination)
+                raise
         return {
             "ok": True,
             "dry_run": False,
@@ -163,14 +193,15 @@ def rollback(backup: str | Path, target: str | Path) -> dict:
     if not source.is_dir():
         raise UpgradeError(f"نسخة التراجع غير موجودة: {source}")
     failed = destination.parent / f"{destination.name}.failed-{_stamp()}"
-    if destination.exists():
-        os.replace(destination, failed)
-    try:
-        os.replace(source, destination)
-    except OSError:
-        if failed.exists():
-            os.replace(failed, destination)
-        raise
+    with _safe_cwd(destination):
+        if destination.exists():
+            os.replace(destination, failed)
+        try:
+            os.replace(source, destination)
+        except OSError:
+            if failed.exists():
+                os.replace(failed, destination)
+            raise
     return {"ok": True, "restored": str(destination), "failed_copy": str(failed)}
 
 

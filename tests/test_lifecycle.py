@@ -564,6 +564,60 @@ class UpgradeTests(TempDirTest):
         self.assertEqual(after["entries"], 2)
         self.assertEqual(after["head"], before["head"])
 
+    def test_upgrade_works_when_cwd_is_target(self) -> None:
+        target = self._install()
+        original = Path.cwd()
+        try:
+            os.chdir(target)
+            report = upgrade.install_bundle(self._bundle(), target)
+        finally:
+            os.chdir(original)
+        self.assertTrue(report["ok"])
+        self.assertEqual((target / "repl.py").read_text("utf-8"), "print('new')\n")
+        self.assertTrue((target / "audit.jsonl").is_file())
+
+    def test_rollback_works_when_cwd_is_target(self) -> None:
+        target = self._install()
+        report = upgrade.install_bundle(self._bundle(), target)
+        original = Path.cwd()
+        try:
+            os.chdir(target)
+            restored = upgrade.rollback(report["backup"], target)
+        finally:
+            os.chdir(original)
+        self.assertTrue(restored["ok"])
+        self.assertEqual((target / "repl.py").read_text("utf-8"), "print('old')\n")
+        self.assertTrue((target / "audit.jsonl").is_file())
+
+    def test_safe_cwd_tolerates_unresolvable_cwd(self) -> None:
+        from replatform.tools import upgrade as upgrade_tool
+
+        with patch.object(Path, "resolve", side_effect=OSError("unresolvable")):
+            with upgrade_tool._safe_cwd(self.tmp):
+                pass
+
+    def test_safe_cwd_falls_back_when_restore_fails(self) -> None:
+        from replatform.tools import upgrade as upgrade_tool
+
+        original = Path.cwd()
+        real_chdir = os.chdir
+        state = {"calls": 0}
+
+        def flaky(path: str) -> None:
+            state["calls"] += 1
+            if state["calls"] == 2:
+                raise OSError("cwd locked")
+            real_chdir(path)
+
+        try:
+            os.chdir(self.tmp)
+            with patch.object(upgrade_tool.os, "chdir", side_effect=flaky):
+                with upgrade_tool._safe_cwd(self.tmp):
+                    pass
+            self.assertEqual(Path.cwd(), Path(tempfile.gettempdir()))
+        finally:
+            real_chdir(original)
+
     def test_rollback_restores_previous_install(self) -> None:
         target = self._install()
         report = upgrade.install_bundle(self._bundle(), target)

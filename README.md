@@ -2,7 +2,7 @@
 
 **منصة ويندوز محلية للهندسة العكسية وتحليل البرمجيات — PE · APK · YARA · Ghidra · وكلاء ذكاء اصطناعي مقيدون.**
 
-الإصدار **1.5.1** · رخصة **MIT** · Windows 10/11 · Python 3.11+ · حالة **Beta**
+الإصدار **1.5.2** · رخصة **MIT** · Windows 10/11 · Python 3.11+ · حالة **Beta**
 
 [English overview](README.en.md) · [التوثيق الكامل](PLATFORM.md) · [دليل النشر](docs/DEPLOYMENT.md) · [البنية](docs/ARCHITECTURE.md) · [الجودة](docs/QUALITY.md)
 
@@ -26,11 +26,11 @@
 ### حزمة محمولة (موصى به)
 
 ```powershell
-# 1) نزّل replatform-1.5.1-portable.zip من صفحة الإصدارات وتحقق من البصمة
-Get-FileHash .\replatform-1.5.1-portable.zip -Algorithm SHA256
+# 1) نزّل replatform-1.5.2-portable.zip من صفحة الإصدارات وتحقق من البصمة
+Get-FileHash .\replatform-1.5.2-portable.zip -Algorithm SHA256
 
 # 2) فك الضغط ثم
-cd replatform-1.5.1
+cd replatform-1.5.2
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 
 # 3) تحقق
@@ -99,7 +99,7 @@ python -m replatform license status        # الترخيص التجاري (تح
 
 | المؤشر | القيمة |
 |---|---|
-| اختبارات `unittest` | **611** — بلا شبكة أو عيّنات حقيقية |
+| اختبارات `unittest` | **615** — بلا شبكة أو عيّنات حقيقية |
 | تغطية الوحدات | **94%** (حد CI: 90%) |
 | فحص الأنواع | `mypy` — صفر أخطاء في 49 ملفاً |
 | فحص أمني ثابت | قواعد `flake8-bandit` (`S`) داخل `ruff` — صفر نتائج غير مبرَّرة |
@@ -142,7 +142,7 @@ python -m replatform selftest --full
 
 ## القيود المعروفة
 
-- **Windows فقط** في 1.5.1 (Sandbox وأدوات APK/PE مرتبطة بالمنصة).
+- **Windows فقط** في 1.5.2 (Sandbox وأدوات APK/PE مرتبطة بالمنصة).
 - **الأدوات الخارجية غير مضمَّنة**: Ghidra/JDK/apktool/jadx/YARA/Rizin تُثبَّت
   منفصلة؛ بدونها تظهر المحللات المرتبطة `skipped`.
 - **الموصلات المجانية الثلاثة** (NVD/OSV/CISA KEV) جُرِّبت حياً بنجاح (TLSv1.3)؛

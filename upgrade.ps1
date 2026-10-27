@@ -7,6 +7,9 @@
     and only then replaces installation files. User data is preserved:
     config.json, workspaces/, plugins/, license.json, audit.jsonl.
 
+    Run this script from the extracted *new* bundle (or from outside the install
+    directory) so the upgrade uses the newest logic, not the old installation's.
+
 .PARAMETER Bundle
     Path to replatform-<version>-portable.zip
 
@@ -20,7 +23,9 @@
     Installation directory. Defaults to the script's directory.
 
 .EXAMPLE
-    powershell -ExecutionPolicy Bypass -File .\upgrade.ps1 -Bundle .\replatform-1.5.1-portable.zip -Sha256 <hash>
+    # From the extracted new bundle, upgrading an older install in place:
+    powershell -ExecutionPolicy Bypass -File .\replatform-1.5.2\upgrade.ps1 `
+      -Bundle .\replatform-1.5.2-portable.zip -Target C:\REPLATFORM -Sha256 <hash> -Yes
 #>
 [CmdletBinding()]
 param(
@@ -33,6 +38,11 @@ param(
 $ErrorActionPreference = "Stop"
 $python = Join-Path $Target ".venv\Scripts\python.exe"
 if (-not (Test-Path $python)) { $python = "python" }
+# Run the upgrader shipped next to this script (the version being installed) so
+# upgrades always use the newest logic, even when the target is an older install.
+$upgrader = Join-Path $PSScriptRoot "repl.py"
+if (-not (Test-Path $upgrader)) { $upgrader = Join-Path $Target "repl.py" }
+$safeCwd = [IO.Path]::GetTempPath()
 
 if (-not (Test-Path $Bundle)) { throw "Bundle not found: $Bundle" }
 
@@ -49,14 +59,18 @@ if ($Sha256) {
 }
 
 if (-not $Yes) {
-    & $python (Join-Path $Target "repl.py") upgrade $Bundle --target $Target --dry-run
+    Push-Location $safeCwd
+    try { & $python $upgrader upgrade $Bundle --target $Target --dry-run }
+    finally { Pop-Location }
     if ($LASTEXITCODE -ne 0) { throw "Dry-run failed." }
     Write-Host ""
     Write-Host "Preview only. Re-run with -Yes to apply (data is preserved)." -ForegroundColor Yellow
     exit 0
 }
 
-& $python (Join-Path $Target "repl.py") upgrade $Bundle --target $Target --sha256 $actual --yes
+Push-Location $safeCwd
+try { & $python $upgrader upgrade $Bundle --target $Target --sha256 $actual --yes }
+finally { Pop-Location }
 if ($LASTEXITCODE -ne 0) { throw "Upgrade failed. The previous version was restored automatically." }
 
 Write-Host ""
