@@ -75,8 +75,9 @@
 | توقيع | Sigstore keyless في CI (`cosign verify-blob`) |
 | بناء حتمي | `--reproducible` يثبت تطابق البصمة |
 | فحص اعتماديات | `pip-audit` في CI |
-| تحديثات | Dependabot |
-| فحص أسرار | `replatform.tools.secretscan` في CI |
+| تحديثات | Dependabot + تحديثات أمنية تلقائية |
+| فحص أسرار | `replatform.tools.secretscan` في CI + secret scanning وpush protection على المستودع |
+| حماية الفرع | `master` محمي من الحذف والدفع القسري (enforce admins) |
 
 ## 7. دورة حياة التطوير
 

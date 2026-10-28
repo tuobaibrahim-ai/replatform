@@ -74,6 +74,8 @@ REQUIRED_TEXT = (
     "Windows",
     'lang="ar"',
     'dir="rtl"',
+    "Content-Security-Policy",
+    'name="referrer" content="no-referrer"',
 )
 
 FORBIDDEN_ASSET_PATTERNS = (

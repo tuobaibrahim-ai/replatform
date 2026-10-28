@@ -40,6 +40,8 @@ jobs:
         run: |
           mkdir -p _site
           cp site/index.html _site/index.html
+          cp site/robots.txt _site/robots.txt
+          cp site/sitemap.xml _site/sitemap.xml
 
       - uses: actions/configure-pages@v5
 

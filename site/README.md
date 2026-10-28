@@ -62,11 +62,13 @@ python scripts/site_tool.py check
 
 ## 4. التحقق المنفذ
 
-- `python scripts/site_tool.py check` — ناجح.
-- Lighthouse (محلي): Accessibility **100**، Best Practices **100**، SEO **100**،
-  بلا إخفاقات.
+- `python scripts/site_tool.py check` — ناجح (يفشل إذا غاب CSP أو `no-referrer`).
+- Lighthouse (محلي وعلى الرابط الحي): Accessibility **100**، Best Practices
+  **100**، SEO **100**، بلا إخفاقات.
 - لا تمرير أفقي عند عرض 1000px (تم الفحص عبر المتصفح).
 - HTML دلالي، `lang="ar"`، `dir="rtl"`، تباين ألوان، `prefers-reduced-motion`.
+- **تصلّب النشر:** CSP (`default-src 'none'` مع سماح الأنماط المضمّنة والاتصال
+  بالمنشأ نفسه فقط)، `referrer=no-referrer`، و`robots.txt` + `sitemap.xml`.
 
 ## 5. ما يجب تحديثه مع كل إصدار
 
