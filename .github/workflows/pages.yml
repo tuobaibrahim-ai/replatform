@@ -1,11 +1,16 @@
 name: Pages
 
-# نشر صفحة الهبوط يدوياً بعد تفعيل GitHub Pages في إعدادات المستودع
-# (Settings → Pages → Source: GitHub Actions). لا يعمل تلقائياً كي لا يفشل
-# CI عندما تكون Pages معطّلة.
+# نشر صفحة الهبوط تلقائياً عند تغيير أي ملف تحت site/، أو يدوياً من
+# Actions → Pages. يتطلب تفعيل Pages مرة واحدة (Settings → Pages →
+# Source: GitHub Actions).
 
 on:
   workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - "site/**"
+      - ".github/workflows/pages.yml"
 
 permissions:
   contents: read

@@ -4,6 +4,9 @@
 لا تحليلات. تُنشر كما هي على أي استضافة ثابتة (GitHub Pages، Netlify، IIS،
 Nginx) أو تُفتح محلياً.
 
+**المنشور:** <https://tuobaibrahim-ai.github.io/replatform/> — GitHub Pages،
+نشر تلقائي عند تغيير أي ملف تحت `site/`، وتشغيل يدوي متاح.
+
 ## 1. البناء
 
 ```powershell

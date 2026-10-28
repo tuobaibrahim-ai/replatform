@@ -6,7 +6,7 @@
 
 **Version 1.5.2 · MIT License · Windows 10/11 · Python 3.11+ · Beta**
 
-[Arabic README](README.md) · [Full reference](PLATFORM.md) · [Deployment](docs/DEPLOYMENT.md) · [Architecture](docs/ARCHITECTURE.md) · [Quality](docs/QUALITY.md)
+[Product page](https://tuobaibrahim-ai.github.io/replatform/) · [Arabic README](README.md) · [Full reference](PLATFORM.md) · [Deployment](docs/DEPLOYMENT.md) · [Architecture](docs/ARCHITECTURE.md) · [Quality](docs/QUALITY.md)
 
 ---
 

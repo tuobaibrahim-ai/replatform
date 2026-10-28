@@ -4,7 +4,7 @@
 
 الإصدار **1.5.2** · رخصة **MIT** · Windows 10/11 · Python 3.11+ · حالة **Beta**
 
-[English overview](README.en.md) · [التوثيق الكامل](PLATFORM.md) · [دليل النشر](docs/DEPLOYMENT.md) · [البنية](docs/ARCHITECTURE.md) · [الجودة](docs/QUALITY.md)
+[صفحة المنتج](https://tuobaibrahim-ai.github.io/replatform/) · [English overview](README.en.md) · [التوثيق الكامل](PLATFORM.md) · [دليل النشر](docs/DEPLOYMENT.md) · [البنية](docs/ARCHITECTURE.md) · [الجودة](docs/QUALITY.md)
 
 ---
 

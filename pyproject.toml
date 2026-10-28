@@ -44,6 +44,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/tuobaibrahim-ai/replatform"
+Website = "https://tuobaibrahim-ai.github.io/replatform/"
 Repository = "https://github.com/tuobaibrahim-ai/replatform"
 Documentation = "https://github.com/tuobaibrahim-ai/replatform/blob/master/PLATFORM.md"
 Changelog = "https://github.com/tuobaibrahim-ai/replatform/blob/master/CHANGELOG.md"

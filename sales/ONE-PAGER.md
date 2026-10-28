@@ -80,6 +80,8 @@
 2. تصلك نسخة تقييم 30 يوماً (اختياري) أو عرض مكتوب صالح 30 يوماً.
 3. بعد الموافقة والسداد يُصدر الترخيص ويُسلَّم عبر قناة آمنة.
 
+**الموقع:** <https://tuobaibrahim-ai.github.io/replatform/>
+
 **التواصل:** GitHub — [`@tuobaibrahim-ai`](https://github.com/tuobaibrahim-ai)
 · الإصدارات: [`releases`](https://github.com/tuobaibrahim-ai/replatform/releases)
 
