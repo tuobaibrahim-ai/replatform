@@ -123,6 +123,7 @@ python -m replatform selftest --full
 python -m replatform.tools.release --reproducible
 python -m replatform.tools.release --dist dist --verify
 python scripts/site_tool.py check
+python scripts/linkcheck.py
 ```
 
 - [`PROJECT_REPORT.md`](../PROJECT_REPORT.md) — حالة المشروع.

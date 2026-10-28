@@ -17,11 +17,13 @@
 | Benchmark | `python -m replatform benchmark` | 5/5 |
 | Release | `python -m replatform.tools.release --portable` | SBOM + بصمات + ZIP |
 
-CI (`.github/workflows/ci.yml`) يشغّل Lint (مع `S`) وmypy وCompile وUnit
-وCoverage وDependency audit وSelf-test على Windows 2022 و2025 مع Python
-3.11–3.14، ويثبت الاعتماديات من `requirements-dev.lock` بالبصمات، ويتحقق من
-البناء الحتمي، ويشغّل على Linux: `pip-audit` و`secretscan` ومجموعة الاختبارات
-كاملة كإشارة قابلية نقل (المنتج مدعوم على Windows فقط).
+CI (`.github/workflows/ci.yml`) يشغّل Lint (مع `S`، ويغطي `scripts/`) وmypy
+وCompile وUnit وCoverage وDependency audit وSelf-test على Windows 2022 و2025
+مع Python 3.11–3.14، ويثبت الاعتماديات من `requirements-dev.lock` بالبصمات،
+ويتحقق من البناء الحتمي، ويشغّل على Linux: `pip-audit` و`secretscan` وفحص
+صفحة الهبوط (`scripts/site_tool.py check`) وفحص روابط الوثائق
+(`scripts/linkcheck.py`) ومجموعة الاختبارات كاملة كإشارة قابلية نقل (المنتج
+مدعوم على Windows فقط).
 
 ## 2. الوضع الفعلي (2026-10-26)
 
