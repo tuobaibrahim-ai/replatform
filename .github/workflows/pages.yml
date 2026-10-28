@@ -1,0 +1,46 @@
+name: Pages
+
+# نشر صفحة الهبوط يدوياً بعد تفعيل GitHub Pages في إعدادات المستودع
+# (Settings → Pages → Source: GitHub Actions). لا يعمل تلقائياً كي لا يفشل
+# CI عندما تكون Pages معطّلة.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy site/
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build and verify page
+        run: |
+          python scripts/site_tool.py build
+          python scripts/site_tool.py check
+
+      - name: Stage artifact
+        run: |
+          mkdir -p _site
+          cp site/index.html _site/index.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
