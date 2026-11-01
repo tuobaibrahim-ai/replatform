@@ -9,6 +9,8 @@ from __future__ import annotations
 import argparse
 import contextlib
 import io
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -107,6 +109,30 @@ class ParserSnapshotTests(unittest.TestCase):
                 parser.parse_args(["--version"])
         self.assertEqual(ctx.exception.code, 0)
         self.assertIn("REPLATFORM", out.getvalue())
+
+
+class LazyImportTests(unittest.TestCase):
+    """يمنع إعادة إدخال استيرادات ثقيلة في مسار بدء CLI — كل أمر يدفع ثمنها."""
+
+    def test_cli_import_does_not_load_agent_stack(self) -> None:
+        script = (
+            "import sys, replatform.cli\n"
+            "heavy = [m for m in ("
+            "'replatform.agents.loop', 'replatform.agents.provider', "
+            "'replatform.tools.benchmark', 'replatform.tools.sandbox', "
+            "'replatform.tools.doctor', 'replatform.tools.bindiff') "
+            "if m in sys.modules]\n"
+            "print(','.join(heavy))\n"
+        )
+        proc = subprocess.run(
+            [sys.executable, "-c", script],
+            capture_output=True, text=True, timeout=120,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(
+            proc.stdout.strip(), "",
+            f"استيرادات ثقيلة عند بدء CLI: {proc.stdout.strip()}",
+        )
 
 
 class MainDispatchTests(unittest.TestCase):

@@ -11,9 +11,6 @@ import sys
 from pathlib import Path
 
 from . import __version__
-from .agents import heuristic
-from .agents.loop import run_agent
-from .agents.provider import ProviderError, build_provider
 from .analyzers import Target, load_analyzers, run_analyzers
 from .core import state
 from .core import stdio
@@ -31,7 +28,7 @@ from .core.export import html_to_pdf
 from .core.registry import detect_tools
 from .core.workspace import Workspace
 from .reports import export_json, export_pdf, render
-from .tools import apk_tools, benchmark, bindiff, doctor, enterprise, licensing, patcher, sandbox
+from .tools import licensing
 from .tools import upgrade as upgrade_tool
 
 try:
@@ -188,6 +185,8 @@ def _skills_from_arg(value: str | None) -> list[str]:
 def _run_agent_llm(ws, target, results, cfg, task: str | None, skills: list[str] | None = None):
     """يشغّل وكيل LLM مع أدوات قراءة فقط. يعيد dict أو None عند الفشل."""
     from .agents import tools as agent_tools
+    from .agents.loop import run_agent
+    from .agents.provider import ProviderError, build_provider
 
     if cfg["agent"].get("restrict_paths", True):
         agent_tools.configure([target.path, ws.path])
@@ -304,6 +303,8 @@ def cmd_analyze(args) -> int:
             print(f"  {_ok('✓')} {name} ({result.get('seconds', 0)}ث)")
 
     print(_cyan("\n[2/3] وكيل التحليل:"))
+    from .agents import heuristic
+
     result = heuristic.triage(ws, {
         "name": target.name, "kind": target.kind,
         "sha256": target.sha256, "size": target.size,
@@ -344,6 +345,8 @@ def cmd_agent(args) -> int:
     print(f"  المهمة: {args.task or '(تحليل عام)'}\n")
 
     results = run_analyzers(target, ws)
+    from .agents import heuristic
+
     heuristic.triage(ws, {"name": target.name, "kind": target.kind,
                           "sha256": target.sha256, "size": target.size}, results)
 
@@ -397,6 +400,8 @@ def cmd_current(_args) -> int:
 
 
 def cmd_patch(args) -> int:
+    from .tools import patcher
+
     target = _resolve_target(args.target)
     result = patcher.patch(
         target, args.find, args.replace,
@@ -451,6 +456,8 @@ def cmd_patch(args) -> int:
 
 
 def cmd_apk(args) -> int:
+    from .tools import apk_tools
+
     action = args.action
     if action == "devices":
         result = apk_tools.devices()
@@ -494,6 +501,8 @@ def cmd_apk(args) -> int:
 
 
 def cmd_diff(args) -> int:
+    from .tools import bindiff
+
     print(_cyan("=== مقارنة نسختين (bin-diff) ==="))
     result = bindiff.run(args.a, args.b)
     a, b = result["a"], result["b"]
@@ -595,6 +604,8 @@ def cmd_ghidra(args) -> int:
             print(artifact["log"][-800:])
         return 2
 
+    from .agents import heuristic
+
     heuristic.triage(ws, {"name": target.name, "kind": target.kind,
                           "sha256": target.sha256, "size": target.size}, results)
     print(f"  البرنامج: {artifact.get('program', '')} — اللغة: {artifact.get('language', '')}")
@@ -621,6 +632,8 @@ def cmd_ghidra(args) -> int:
 
 
 def cmd_benchmark(args) -> int:
+    from .tools import benchmark
+
     print(_cyan("=== تقييم قبول الوكيل (بلا شبكة) ==="))
     result = benchmark.run_benchmark()
     for case in result["cases"]:
@@ -642,6 +655,8 @@ def cmd_benchmark(args) -> int:
 
 
 def cmd_sandbox(args) -> int:
+    from .tools import sandbox
+
     print(_cyan("=== عزل ديناميكي (Windows Sandbox) ==="))
     target = _resolve_target(args.target)
     try:
@@ -847,6 +862,8 @@ def cmd_config(args) -> int:
 
 
 def cmd_doctor(args) -> int:
+    from .tools import doctor
+
     only = tuple(part.strip() for part in (args.only or "").split(",") if part.strip())
     report = doctor.run_checks(only)
     if args.bundle:
@@ -906,6 +923,8 @@ def cmd_license(args) -> int:
 
 
 def cmd_audit(args) -> int:
+    from .tools import enterprise
+
     if args.action == "record":
         if not args.event:
             raise ValueError("حدّد الحدث: audit record --event <اسم>")
@@ -928,6 +947,8 @@ def cmd_audit(args) -> int:
 
 
 def cmd_fleet(args) -> int:
+    from .tools import enterprise
+
     payload = enterprise.fleet_report(args.out)
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
