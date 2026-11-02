@@ -142,6 +142,7 @@ python -m replatform selftest --full
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — layers, data flow, design decisions.
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — install, air-gapped setup, upgrades, troubleshooting.
 - [`docs/QUALITY.md`](docs/QUALITY.md) — gates, test inventory, release checklist.
+- [`docs/ENGINEERING-REPORT.md`](docs/ENGINEERING-REPORT.md) — measured engineering report (code metrics, performance, debt).
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — priorities and non-goals.
 - [`INTEGRATIONS.md`](INTEGRATIONS.md) — connectors, keys, read-only policy.
 - [`CHANGELOG.md`](CHANGELOG.md) — release history.
